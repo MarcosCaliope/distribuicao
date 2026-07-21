@@ -13,3 +13,8 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
+
+# Dados de referência (ex.: os 70 códigos de Irregularidade) vêm de
+# db/seeds.rb, não de fixtures — carregado uma vez por processo de teste,
+# antes de cada teste começar sua própria transação.
+Rails.application.load_seed

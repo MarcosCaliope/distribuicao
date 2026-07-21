@@ -21,6 +21,105 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: active_storage_attachments; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.active_storage_attachments (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    record_type character varying NOT NULL,
+    record_id bigint NOT NULL,
+    blob_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.active_storage_attachments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_storage_attachments_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.active_storage_attachments_id_seq OWNED BY distribuidor.active_storage_attachments.id;
+
+
+--
+-- Name: active_storage_blobs; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.active_storage_blobs (
+    id bigint NOT NULL,
+    key character varying NOT NULL,
+    filename character varying NOT NULL,
+    content_type character varying,
+    metadata text,
+    service_name character varying NOT NULL,
+    byte_size bigint NOT NULL,
+    checksum character varying,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.active_storage_blobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_storage_blobs_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.active_storage_blobs_id_seq OWNED BY distribuidor.active_storage_blobs.id;
+
+
+--
+-- Name: active_storage_variant_records; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.active_storage_variant_records (
+    id bigint NOT NULL,
+    blob_id bigint NOT NULL,
+    variation_digest character varying NOT NULL
+);
+
+
+--
+-- Name: active_storage_variant_records_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.active_storage_variant_records_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: active_storage_variant_records_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.active_storage_variant_records_id_seq OWNED BY distribuidor.active_storage_variant_records.id;
+
+
+--
 -- Name: apresentantes; Type: TABLE; Schema: distribuidor; Owner: -
 --
 
@@ -187,7 +286,7 @@ ALTER SEQUENCE distribuidor.devedor_solidarios_id_seq OWNED BY distribuidor.deve
 
 CREATE TABLE distribuidor.devedores (
     id bigint NOT NULL,
-    tipo_documento character varying(3) NOT NULL,
+    tipo_documento character varying(4) NOT NULL,
     cpf_cnpj character varying(14) NOT NULL,
     nome character varying,
     endereco character varying,
@@ -353,6 +452,46 @@ ALTER SEQUENCE distribuidor.oficio_distribuidores_id_seq OWNED BY distribuidor.o
 
 
 --
+-- Name: remessas; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.remessas (
+    id bigint NOT NULL,
+    nome_arquivo character varying NOT NULL,
+    banco_id bigint,
+    apresentante_id bigint,
+    numero_remessa character varying,
+    quantidade_registros_transacao integer,
+    quantidade_titulos integer,
+    quantidade_indicacoes integer,
+    quantidade_originais integer,
+    status character varying DEFAULT 'pendente'::character varying NOT NULL,
+    mensagem_erro text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: remessas_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.remessas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: remessas_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.remessas_id_seq OWNED BY distribuidor.remessas.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: distribuidor; Owner: -
 --
 
@@ -400,17 +539,17 @@ ALTER SEQUENCE distribuidor.tipo_titulos_id_seq OWNED BY distribuidor.tipo_titul
 
 CREATE TABLE distribuidor.titulos (
     id bigint NOT NULL,
-    protocolo_original character varying NOT NULL,
+    protocolo_original character varying,
     numero_protocolo_distribuido character varying,
     devedor_id bigint NOT NULL,
-    tipo_documento_devedor character varying(3) NOT NULL,
+    tipo_documento_devedor character varying(4) NOT NULL,
     cpf_cnpj_devedor character varying(14) NOT NULL,
     nome_devedor character varying,
     endereco_devedor character varying,
     cep_devedor character varying,
     cidade_devedor character varying,
     uf_devedor character varying(2),
-    tipo_titulo_id bigint NOT NULL,
+    tipo_titulo_id bigint,
     numero_titulo character varying NOT NULL,
     data_emissao date,
     data_vencimento date,
@@ -433,9 +572,9 @@ CREATE TABLE distribuidor.titulos (
     efeito_falencia boolean DEFAULT false NOT NULL,
     irregularidade_id bigint,
     tipo_ocorrencia character varying(1),
-    nome_arquivo_remessa character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    remessa_id bigint
 );
 
 
@@ -456,6 +595,27 @@ CREATE SEQUENCE distribuidor.titulos_id_seq
 --
 
 ALTER SEQUENCE distribuidor.titulos_id_seq OWNED BY distribuidor.titulos.id;
+
+
+--
+-- Name: active_storage_attachments id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_attachments ALTER COLUMN id SET DEFAULT nextval('distribuidor.active_storage_attachments_id_seq'::regclass);
+
+
+--
+-- Name: active_storage_blobs id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_blobs ALTER COLUMN id SET DEFAULT nextval('distribuidor.active_storage_blobs_id_seq'::regclass);
+
+
+--
+-- Name: active_storage_variant_records id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_variant_records ALTER COLUMN id SET DEFAULT nextval('distribuidor.active_storage_variant_records_id_seq'::regclass);
 
 
 --
@@ -522,6 +682,13 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores ALTER COLUMN id SET DEFAULT 
 
 
 --
+-- Name: remessas id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.remessas ALTER COLUMN id SET DEFAULT nextval('distribuidor.remessas_id_seq'::regclass);
+
+
+--
 -- Name: tipo_titulos id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -533,6 +700,30 @@ ALTER TABLE ONLY distribuidor.tipo_titulos ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY distribuidor.titulos ALTER COLUMN id SET DEFAULT nextval('distribuidor.titulos_id_seq'::regclass);
+
+
+--
+-- Name: active_storage_attachments active_storage_attachments_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_attachments
+    ADD CONSTRAINT active_storage_attachments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: active_storage_blobs active_storage_blobs_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_blobs
+    ADD CONSTRAINT active_storage_blobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: active_storage_variant_records active_storage_variant_records_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_variant_records
+    ADD CONSTRAINT active_storage_variant_records_pkey PRIMARY KEY (id);
 
 
 --
@@ -616,6 +807,14 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores
 
 
 --
+-- Name: remessas remessas_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.remessas
+    ADD CONSTRAINT remessas_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -637,6 +836,34 @@ ALTER TABLE ONLY distribuidor.tipo_titulos
 
 ALTER TABLE ONLY distribuidor.titulos
     ADD CONSTRAINT titulos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: index_active_storage_attachments_on_blob_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_active_storage_attachments_on_blob_id ON distribuidor.active_storage_attachments USING btree (blob_id);
+
+
+--
+-- Name: index_active_storage_attachments_uniqueness; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_active_storage_attachments_uniqueness ON distribuidor.active_storage_attachments USING btree (record_type, record_id, name, blob_id);
+
+
+--
+-- Name: index_active_storage_blobs_on_key; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_active_storage_blobs_on_key ON distribuidor.active_storage_blobs USING btree (key);
+
+
+--
+-- Name: index_active_storage_variant_records_uniqueness; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_active_storage_variant_records_uniqueness ON distribuidor.active_storage_variant_records USING btree (blob_id, variation_digest);
 
 
 --
@@ -738,6 +965,27 @@ CREATE UNIQUE INDEX index_oficio_distribuidores_on_codigo_legado ON distribuidor
 
 
 --
+-- Name: index_remessas_on_apresentante_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_remessas_on_apresentante_id ON distribuidor.remessas USING btree (apresentante_id);
+
+
+--
+-- Name: index_remessas_on_banco_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_remessas_on_banco_id ON distribuidor.remessas USING btree (banco_id);
+
+
+--
+-- Name: index_remessas_on_nome_arquivo; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_remessas_on_nome_arquivo ON distribuidor.remessas USING btree (nome_arquivo);
+
+
+--
 -- Name: index_tipo_titulos_on_abreviatura; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -822,6 +1070,13 @@ CREATE UNIQUE INDEX index_titulos_on_protocolo_original ON distribuidor.titulos 
 
 
 --
+-- Name: index_titulos_on_remessa_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_titulos_on_remessa_id ON distribuidor.titulos USING btree (remessa_id);
+
+
+--
 -- Name: index_titulos_on_tipo_titulo_id; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -845,6 +1100,30 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: remessas fk_rails_5676734875; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.remessas
+    ADD CONSTRAINT fk_rails_5676734875 FOREIGN KEY (banco_id) REFERENCES distribuidor.bancos(id);
+
+
+--
+-- Name: titulos fk_rails_683f443bcf; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.titulos
+    ADD CONSTRAINT fk_rails_683f443bcf FOREIGN KEY (remessa_id) REFERENCES distribuidor.remessas(id);
+
+
+--
+-- Name: remessas fk_rails_7cd0eae697; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.remessas
+    ADD CONSTRAINT fk_rails_7cd0eae697 FOREIGN KEY (apresentante_id) REFERENCES distribuidor.apresentantes(id);
+
+
+--
 -- Name: titulos fk_rails_8b7717a836; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -861,6 +1140,14 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_variant_records
+    ADD CONSTRAINT fk_rails_993965df05 FOREIGN KEY (blob_id) REFERENCES distribuidor.active_storage_blobs(id);
+
+
+--
 -- Name: titulos fk_rails_9abfdcf37f; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -874,6 +1161,14 @@ ALTER TABLE ONLY distribuidor.titulos
 
 ALTER TABLE ONLY distribuidor.devedor_solidarios
     ADD CONSTRAINT fk_rails_9d1c9db10c FOREIGN KEY (titulo_id) REFERENCES distribuidor.titulos(id);
+
+
+--
+-- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.active_storage_attachments
+    ADD CONSTRAINT fk_rails_c3b3935057 FOREIGN KEY (blob_id) REFERENCES distribuidor.active_storage_blobs(id);
 
 
 --
@@ -907,6 +1202,12 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260721194014'),
+('20260721193611'),
+('20260721193330'),
+('20260721192532'),
+('20260721192515'),
+('20260721192455'),
 ('20260721185149'),
 ('20260721185147'),
 ('20260721185143'),

@@ -31,5 +31,10 @@ module Distribuicao
     # de verdade, então usamos esse formato aqui.
     config.active_record.schema_format = :sql
     config.active_record.dump_schemas = "distribuidor"
+
+    # No VB6 a "praça de pagamento"/"cidade do devedor" era comparada contra
+    # "FORTALEZA" hardcoded (ver frmImpTitulos.frm) — parametrizado aqui para
+    # não travar o código à comarca de um único cliente.
+    config.x.remessa.cidade_sede = ENV.fetch("REMESSA_CIDADE_SEDE", "FORTALEZA")
   end
 end

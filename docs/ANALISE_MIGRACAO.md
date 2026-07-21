@@ -145,16 +145,64 @@ in-place. Tabela `irregularidades` criada normalizada (schema pronto), mas
 e semeadas** — não foram inventadas.
 
 **Achado de dados para a Etapa 7 (ETL)**: na cópia restaurada, `cad_titulos`
-está vazio (0 registros) — títulos parecem ser purgados/arquivados
-periodicamente em produção — enquanto `tblremessas` (log bruto de toda linha
+está vazio (0 registros), enquanto `tblremessas` (log bruto de toda linha
 importada) tem ~2,45 milhões de linhas, `cad_bancos` 4.831 e `cad_apresenta`
-5.776. Vale confirmar com o usuário se existe outro dump/tabela de arquivo
-histórico de títulos antes de desenhar o ETL.
+5.776. **Confirmado com o usuário**: é normal — `cad_titulos` em produção só
+guarda títulos em aberto (não há tabela de histórico/arquivo à parte a
+localizar). O ETL da Etapa 7 deve tratar `cad_titulos` como "só o que está
+pendente hoje", não como histórico completo.
 
-**Etapa 2 — Importação de remessa**: parser do layout fixo como serviço Ruby, validações de
-arquivo inteiro antes de gravar, `Criticas()` por título (usar gem `cpf_cnpj` em vez de
-reescrever dígito verificador), testes com os arquivos de remessa reais já existentes como
-fixtures.
+**Etapa 2 — Importação de remessa (concluída)**: parser do layout fixo (`app/services/remessa_importacao/`:
+`Header`, `Detalhe`, `Trailer`, `Importador`, `ErroArquivo`) + validações de arquivo inteiro
+(arquivo já importado, caracteres inválidos, sequência de linhas, banco/apresentante
+cadastrado, totais e somatório de segurança do header/trailer) antes de gravar qualquer
+título. Layout de bytes **validado campo a campo contra arquivos reais de produção**
+(`D0010706.211` etc., copiados para `test/fixtures/files/remessas/`), incluindo o checksum
+de segurança (15+15+14+1=45 bateu exatamente).
+
+Achados corrigindo o relatório de exploração inicial:
+- `Criticas()` (validações por título) está em `frmImpTitulos.frm`, não em `ModIMP.bas`.
+- O valor do título vem do byte 247 (não 261 — esse é usado só no somatório de segurança
+  do trailer, lido mas na prática não comparado a nada no código atual).
+- O somatório de segurança do trailer só valida **quantidade**, não valor (o valor é lido
+  do trailer mas nunca comparado).
+
+Mapeamento exato de crítica → código de irregularidade extraído linha a linha de
+`frmImpTitulos.frm` (não inventado): espécie não cadastrada→21, CPF/CNPJ do devedor
+inválido→7, CPF/CNPJ do sacador/credor inválido→10, número do título vazio→16, endereço do
+devedor insuficiente→6, data de emissão inválida→50, vencimento inválido/no futuro ou
+emissão>vencimento→1, nome devedor igual a cedente/sacador→3, documento devedor zerado→50,
+documento devedor igual ao do sacador→7, praça/cidade divergente (exceto apresentante
+"073")→15, falência de CPF→50. Como no legado, **a última crítica que falha é a que vale**
+(não é uma lista — só o último código sobrescreve os anteriores), comportamento replicado
+de propósito para paridade.
+
+As 70 descrições de irregularidade foram extraídas de `FrmCadTitulos.frm#labelIrreg` (não
+inventadas) e semeadas em `db/seeds.rb`/`Irregularidade`.
+
+Correções de schema descobertas ao implementar (Etapa 1 tinha ficado incompleta nestes
+pontos):
+- `titulos.tipo_titulo_id` e `titulos.protocolo_original` passaram a aceitar `NULL`
+  (espécie não cadastrada não tem tipo real para associar; `protocolo_original` só serve
+  para proveniência de dados do ETL, não para títulos novos).
+- `devedores.tipo_documento` e `titulos.tipo_documento_devedor` alargados de 3 para 4
+  caracteres (usamos "CNPJ" em vez do "CGC" arcaico do legado).
+
+Divergências propositais em relação ao legado:
+- Auditoria bruta linha-a-linha (`tblremessas`, 2,45M registros em produção) virou anexo
+  de arquivo via Active Storage no model `Remessa`, em vez de uma tabela crescendo pra
+  sempre.
+- `Devedor.cpf_cnpj` preserva zeros à esquerda (o legado convertia para `Double` em alguns
+  pontos — um bug de arredondamento que não foi replicado).
+- "Cidade da empresa" (hardcoded `"FORTALEZA"` no VB6) virou config
+  (`Rails.application.config.x.remessa.cidade_sede`, `ENV["REMESSA_CIDADE_SEDE"]`).
+- Arquivo pós-import não é mais movido para pasta `processados/` no disco — o status fica
+  no registro `Remessa` (`pendente`/`importada`/`com_erro`/`cancelada`) e o arquivo original
+  fica anexado.
+
+Testado com o arquivo real `D0010706.211` (15 títulos: 14 `DMI` regulares + 1 `DSI` marcado
+irregular por espécie não cadastrada) — 17 testes automatizados em
+`test/services/remessa_importacao/` (rubocop limpo).
 
 **Etapa 3 — Distribuição/rodízio**: definir com o usuário qual dos dois comportamentos
 divergentes do VB6 é o correto antes de portar; resolver a condição de corrida do
