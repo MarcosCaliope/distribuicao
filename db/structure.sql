@@ -428,7 +428,8 @@ CREATE TABLE distribuidor.oficio_distribuidores (
     codigo_legado character varying(6),
     nome character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    livre boolean DEFAULT true NOT NULL
 );
 
 
@@ -598,6 +599,41 @@ ALTER SEQUENCE distribuidor.titulos_id_seq OWNED BY distribuidor.titulos.id;
 
 
 --
+-- Name: vaga_distribuicoes; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.vaga_distribuicoes (
+    id bigint NOT NULL,
+    data date NOT NULL,
+    cartorio_id bigint NOT NULL,
+    faixa_custa_id bigint NOT NULL,
+    livre boolean DEFAULT false NOT NULL,
+    quantidade_titulos integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: vaga_distribuicoes_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.vaga_distribuicoes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: vaga_distribuicoes_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.vaga_distribuicoes_id_seq OWNED BY distribuidor.vaga_distribuicoes.id;
+
+
+--
 -- Name: active_storage_attachments id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -700,6 +736,13 @@ ALTER TABLE ONLY distribuidor.tipo_titulos ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY distribuidor.titulos ALTER COLUMN id SET DEFAULT nextval('distribuidor.titulos_id_seq'::regclass);
+
+
+--
+-- Name: vaga_distribuicoes id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.vaga_distribuicoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.vaga_distribuicoes_id_seq'::regclass);
 
 
 --
@@ -836,6 +879,14 @@ ALTER TABLE ONLY distribuidor.tipo_titulos
 
 ALTER TABLE ONLY distribuidor.titulos
     ADD CONSTRAINT titulos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: vaga_distribuicoes vaga_distribuicoes_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.vaga_distribuicoes
+    ADD CONSTRAINT vaga_distribuicoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1084,6 +1135,42 @@ CREATE INDEX index_titulos_on_tipo_titulo_id ON distribuidor.titulos USING btree
 
 
 --
+-- Name: index_vaga_distribuicoes_on_cartorio_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_vaga_distribuicoes_on_cartorio_id ON distribuidor.vaga_distribuicoes USING btree (cartorio_id);
+
+
+--
+-- Name: index_vaga_distribuicoes_on_data_and_faixa_custa_id_and_livre; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_vaga_distribuicoes_on_data_and_faixa_custa_id_and_livre ON distribuidor.vaga_distribuicoes USING btree (data, faixa_custa_id, livre);
+
+
+--
+-- Name: index_vaga_distribuicoes_on_data_cartorio_faixa; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_vaga_distribuicoes_on_data_cartorio_faixa ON distribuidor.vaga_distribuicoes USING btree (data, cartorio_id, faixa_custa_id);
+
+
+--
+-- Name: index_vaga_distribuicoes_on_faixa_custa_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_vaga_distribuicoes_on_faixa_custa_id ON distribuidor.vaga_distribuicoes USING btree (faixa_custa_id);
+
+
+--
+-- Name: vaga_distribuicoes fk_rails_26992aafe7; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.vaga_distribuicoes
+    ADD CONSTRAINT fk_rails_26992aafe7 FOREIGN KEY (cartorio_id) REFERENCES distribuidor.cartorios(id);
+
+
+--
 -- Name: titulos fk_rails_3e82822bf3; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -1113,6 +1200,14 @@ ALTER TABLE ONLY distribuidor.remessas
 
 ALTER TABLE ONLY distribuidor.titulos
     ADD CONSTRAINT fk_rails_683f443bcf FOREIGN KEY (remessa_id) REFERENCES distribuidor.remessas(id);
+
+
+--
+-- Name: vaga_distribuicoes fk_rails_7c606ef86d; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.vaga_distribuicoes
+    ADD CONSTRAINT fk_rails_7c606ef86d FOREIGN KEY (faixa_custa_id) REFERENCES distribuidor.faixa_custas(id);
 
 
 --
@@ -1202,6 +1297,8 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260728133151'),
+('20260728133133'),
 ('20260721194014'),
 ('20260721193611'),
 ('20260721193330'),

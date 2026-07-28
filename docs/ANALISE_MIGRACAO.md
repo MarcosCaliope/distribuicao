@@ -89,6 +89,16 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
    — avisos que não bloqueiam o salvamento.
 6. `tblParametros` recebe colunas adicionadas via `ALTER TABLE` disparado em runtime pelo
    próprio VB6 — levantar à parte quais colunas existem hoje em produção.
+7. `frmDistribuicaoNew.cmdProcessar_Click` chama `ModIMP.BuscaCartorio(0)` a cada título, mas
+   o cartório que essa função sorteia (primeiro `cad_protesto` com `blivre=true` em ordem de
+   cursor, sem relação com faixa) **não é o cartório de fato gravado no título** — esse vem do
+   sorteio por faixa em `tblDistribuicao` (`aTitDisp(iRandom)`). O único efeito de
+   `BuscaCartorio` é marcar `cad_protesto.blivre=false` para um cartório não relacionado —
+   código morto/vestigial (provavelmente sobra de um rodízio simples anterior ao sorteio por
+   faixa). `cad_protesto.blivre` não reflete a distribuição real; não replicar essa flag como
+   sinal de negócio. `ModIMP.BuscaDistribuidor(0)`, em contraste, é real: decide de fato o
+   ofício distribuidor gravado no título (rodízio simples sobre `cad_distribuidor`, primeiro
+   `blivre=true` com `dis_id<3` em ordem de cursor, reseta todos quando ambos ocupados).
 
 ## Plano por etapas
 
