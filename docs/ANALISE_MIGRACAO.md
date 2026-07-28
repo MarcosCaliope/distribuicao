@@ -41,9 +41,15 @@ Capital/Interior (`esc_capital`/`esc_interior`), e um sistema `SIAC` à parte.
    `cartório + distribuidor + protocolo_original_zero_padded` — ou seja, **`protocolo` é um
    valor derivado e mutável**, não um ID estável.
 4. **Exportação/manifestos** — `frmExportaTitulosDistribuicao.frm` gera um `.rem` por ofício
-   distribuidor (manifesto interno); `frmExportaTitulos.frm` gera um arquivo por
-   cartório+apresentante no mesmo layout do import (retorno ao banco), enfileirado para e-mail
-   via `tblarquivos`.
+   distribuidor (manifesto interno, sem e-mail — puro arquivo local); `frmExportaTitulos.frm`
+   gera um arquivo por cartório+apresentante no mesmo layout do import. O destinatário do
+   e-mail é o **cartório** (`cad_protesto.pro_email`/`scopiaemail`), não o banco — "retorno ao
+   banco" é impreciso, o assunto do e-mail legado é literalmente `"Arquivos da Distribuição,
+   Ofício " & pro_id`. `tblarquivos` é só uma fila de registro em banco; o envio de fato é
+   `cmdEmail_Click`, um botão manual que dispara `SendMail` (automação COM síncrona do
+   Outlook, `ModIMP.bas`) — não existe job assíncrono nem processo agendado no legado. "Fila de
+   e-mail" no legado significa "linha gravada em `tblarquivos` esperando alguém clicar
+   Enviar", não uma fila de verdade.
 5. **Relatórios** — 11 relatórios Crystal Reports, dirigidos por só 6 telas (`frmRelTitulos.frm`
    sozinho cobre 3 modos via botão de opção, reaproveitando o mesmo pipeline
    filtro→dataset→Viewer/Impressora/PDF).
@@ -99,6 +105,29 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
    sinal de negócio. `ModIMP.BuscaDistribuidor(0)`, em contraste, é real: decide de fato o
    ofício distribuidor gravado no título (rodízio simples sobre `cad_distribuidor`, primeiro
    `blivre=true` com `dis_id<3` em ordem de cursor, reseta todos quando ambos ocupados).
+8. `frmExportaTitulosDistribuicao.cmdImportar_Click` (o botão de exportar do manifesto por
+   ofício — nome do evento é sobra de copy-paste, o caption é "&Exportar") aborta a exportação
+   inteira (`MsgBox` + `Exit Sub`) se o **primeiro** ofício da data não tiver títulos, sem
+   sequer tentar o segundo — comportamento assimétrico, não intencional. Não replicar: cada
+   ofício deve ser pulado independentemente se não tiver títulos pendentes.
+9. Mesmo form, nome do arquivo do manifesto (`"T1oficio" & Mid(Format(data,"ddmmyyyy"),1,4) &
+   ".rem"`) usa só os 4 primeiros caracteres de `"ddmmyyyy"` — ou seja, **dia+mês, sem ano**.
+   Exportações no mesmo dia-do-ano em anos diferentes sobrescrevem o arquivo uma da outra. Não
+   se aplica ao Rails (Active Storage não depende de nome de arquivo pra não colidir), citado
+   aqui só pra não ser confundido com um requisito do layout.
+10. Mesmo form, `GeraDetalhe`: quando a busca por `cad_devedor` (endereço/CEP do devedor) não
+    encontra nada, os dois campos são **omitidos inteiramente** da linha em vez de gravados em
+    branco — desloca todos os bytes seguintes. Não replicar: todo campo de largura fixa tem que
+    ser sempre escrito (em branco quando faltar dado), nunca omitido.
+11. Mesmo form, `Format(rsTIT!dat_venc,"ddmmyyyy")` roda sem checar `IsNull` — `dat_venc` é
+    nullable no schema; um título com vencimento em branco quebra a exportação no legado.
+12. `frmExportaTitulos.frm`: nenhum dos dois exports (manifesto ou retorno) marca o título como
+    "já exportado" — rodar de novo simplesmente sobrescreve o arquivo (`Open ... For Output`) e
+    o upsert em `tblarquivos` (chave `pro_id+dist_id+data+cod_apr`). Tolerável quando é um
+    humano clicando um botão; no Rails, como o envio de e-mail passa a ser um job automático
+    (ver Etapa 4), a ausência de controle de duplicidade viraria reenvio duplicado em caso de
+    retry — por isso a Etapa 4 introduz rastreamento novo (`titulo.manifesto_distribuidor_id`/
+    `retorno_exportado_id`) que não existe no legado, decisão tomada com o usuário.
 
 ## Plano por etapas
 
@@ -223,8 +252,15 @@ no rodízio simples) é caminho raramente usado e **não deve ser replicado** �
 que é, não como comportamento alternativo válido. Resolver a condição de corrida do
 `UPDATE ... WHERE blivre=true` sem lock via transação + lock otimista/pessimista.
 
-**Etapa 4 — Exportação/manifestos**: manifesto por ofício distribuidor + retorno por
-cartório/apresentante no layout fixo, fila de e-mail como job assíncrono.
+**Etapa 4 — Exportação/manifestos**: duas saídas independentes. (a) Manifesto por ofício
+distribuidor — layout próprio de 302 bytes, só linhas de detalhe (sem header/trailer), sem
+e-mail. (b) Retorno por cartório+apresentante — reaproveita byte a byte o layout do import
+(`header.rb`/`detalhe.rb`/`trailer.rb`), mais um bloco de 42 bytes (posições 446-487) com dados
+de ocorrência de protesto que o import não lê; como o app ainda não tem rastreamento de
+ocorrência de protesto (`custas`, `data_ocorrencia`, declaração do portador não existem em
+lugar nenhum), esses subcampos saem em branco por ora — lacuna conhecida, não uma omissão
+silenciosa. O envio por e-mail (só do retorno, não do manifesto) via job assíncrono é
+comportamento novo, não uma port: o legado nunca teve fila de verdade (ver item 12 acima).
 
 **Etapa 5 — Relatórios**: consolidar os 11 relatórios Crystal Reports (dirigidos por só 6
 telas) numa única concern de relatório Rails (HTML/PDF via Prawn ou WickedPDF).

@@ -6,6 +6,8 @@ class Titulo < ApplicationRecord
   belongs_to :oficio_distribuidor, optional: true
   belongs_to :irregularidade, optional: true
   belongs_to :remessa, optional: true
+  belongs_to :manifesto_distribuidor, optional: true
+  belongs_to :retorno_exportado, optional: true
 
   has_many :devedor_solidarios
 
@@ -19,4 +21,6 @@ class Titulo < ApplicationRecord
   scope :distribuidos, -> { where.not(data_distribuicao: nil) }
   scope :pendentes_distribuicao, -> { where(data_distribuicao: nil) }
   scope :irregulares, -> { where.not(irregularidade_id: nil) }
+  scope :pendentes_manifesto, -> { distribuidos.where(manifesto_distribuidor_id: nil) }
+  scope :pendentes_retorno, -> { distribuidos.where(retorno_exportado_id: nil) }
 end

@@ -23,6 +23,25 @@ module Distribuicao
       assert distribuido_ontem.reload.cartorio_id.present?
     end
 
+    test "limpa também os vínculos de exportação (Etapa 4)" do
+      titulo = criar_titulo_distribuido(data_distribuicao: Date.current)
+      oficio_distribuidor = OficioDistribuidor.find(titulo.oficio_distribuidor_id)
+      manifesto = ManifestoDistribuidor.create!(
+        oficio_distribuidor: oficio_distribuidor, data: Date.current, quantidade_titulos: 1
+      )
+      apresentante = Apresentante.create!(nome: "Banco X", codigo_legado: "001")
+      retorno = RetornoExportado.create!(
+        cartorio: @cartorio, apresentante: apresentante, data: Date.current, quantidade_titulos: 1
+      )
+      titulo.update!(manifesto_distribuidor: manifesto, retorno_exportado: retorno)
+
+      Desfazedor.new(Date.current).desfazer!
+
+      titulo.reload
+      assert_nil titulo.manifesto_distribuidor_id
+      assert_nil titulo.retorno_exportado_id
+    end
+
     test "filtra por data_distribuicao, não por data_recebimento (regressão do bug do legado)" do
       titulo = criar_titulo_distribuido(data_distribuicao: 5.days.ago.to_date, data_recebimento: Date.current)
 

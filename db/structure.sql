@@ -420,6 +420,39 @@ ALTER SEQUENCE distribuidor.irregularidades_id_seq OWNED BY distribuidor.irregul
 
 
 --
+-- Name: manifesto_distribuidores; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.manifesto_distribuidores (
+    id bigint NOT NULL,
+    oficio_distribuidor_id bigint NOT NULL,
+    data date NOT NULL,
+    quantidade_titulos integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: manifesto_distribuidores_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.manifesto_distribuidores_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: manifesto_distribuidores_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.manifesto_distribuidores_id_seq OWNED BY distribuidor.manifesto_distribuidores.id;
+
+
+--
 -- Name: oficio_distribuidores; Type: TABLE; Schema: distribuidor; Owner: -
 --
 
@@ -490,6 +523,41 @@ CREATE SEQUENCE distribuidor.remessas_id_seq
 --
 
 ALTER SEQUENCE distribuidor.remessas_id_seq OWNED BY distribuidor.remessas.id;
+
+
+--
+-- Name: retorno_exportados; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.retorno_exportados (
+    id bigint NOT NULL,
+    cartorio_id bigint NOT NULL,
+    apresentante_id bigint NOT NULL,
+    data date NOT NULL,
+    quantidade_titulos integer DEFAULT 0 NOT NULL,
+    enviado_em timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: retorno_exportados_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.retorno_exportados_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: retorno_exportados_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.retorno_exportados_id_seq OWNED BY distribuidor.retorno_exportados.id;
 
 
 --
@@ -575,7 +643,9 @@ CREATE TABLE distribuidor.titulos (
     tipo_ocorrencia character varying(1),
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    remessa_id bigint
+    remessa_id bigint,
+    manifesto_distribuidor_id bigint,
+    retorno_exportado_id bigint
 );
 
 
@@ -711,6 +781,13 @@ ALTER TABLE ONLY distribuidor.irregularidades ALTER COLUMN id SET DEFAULT nextva
 
 
 --
+-- Name: manifesto_distribuidores id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.manifesto_distribuidores ALTER COLUMN id SET DEFAULT nextval('distribuidor.manifesto_distribuidores_id_seq'::regclass);
+
+
+--
 -- Name: oficio_distribuidores id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -722,6 +799,13 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores ALTER COLUMN id SET DEFAULT 
 --
 
 ALTER TABLE ONLY distribuidor.remessas ALTER COLUMN id SET DEFAULT nextval('distribuidor.remessas_id_seq'::regclass);
+
+
+--
+-- Name: retorno_exportados id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.retorno_exportados ALTER COLUMN id SET DEFAULT nextval('distribuidor.retorno_exportados_id_seq'::regclass);
 
 
 --
@@ -842,6 +926,14 @@ ALTER TABLE ONLY distribuidor.irregularidades
 
 
 --
+-- Name: manifesto_distribuidores manifesto_distribuidores_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.manifesto_distribuidores
+    ADD CONSTRAINT manifesto_distribuidores_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: oficio_distribuidores oficio_distribuidores_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -855,6 +947,14 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores
 
 ALTER TABLE ONLY distribuidor.remessas
     ADD CONSTRAINT remessas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: retorno_exportados retorno_exportados_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.retorno_exportados
+    ADD CONSTRAINT retorno_exportados_pkey PRIMARY KEY (id);
 
 
 --
@@ -1009,6 +1109,20 @@ CREATE UNIQUE INDEX index_irregularidades_on_codigo ON distribuidor.irregularida
 
 
 --
+-- Name: index_manifesto_distribuidores_on_oficio_data; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_manifesto_distribuidores_on_oficio_data ON distribuidor.manifesto_distribuidores USING btree (oficio_distribuidor_id, data);
+
+
+--
+-- Name: index_manifesto_distribuidores_on_oficio_distribuidor_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_manifesto_distribuidores_on_oficio_distribuidor_id ON distribuidor.manifesto_distribuidores USING btree (oficio_distribuidor_id);
+
+
+--
 -- Name: index_oficio_distribuidores_on_codigo_legado; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -1034,6 +1148,27 @@ CREATE INDEX index_remessas_on_banco_id ON distribuidor.remessas USING btree (ba
 --
 
 CREATE UNIQUE INDEX index_remessas_on_nome_arquivo ON distribuidor.remessas USING btree (nome_arquivo);
+
+
+--
+-- Name: index_retorno_exportados_on_apresentante_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_retorno_exportados_on_apresentante_id ON distribuidor.retorno_exportados USING btree (apresentante_id);
+
+
+--
+-- Name: index_retorno_exportados_on_cartorio_apresentante_data; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_retorno_exportados_on_cartorio_apresentante_data ON distribuidor.retorno_exportados USING btree (cartorio_id, apresentante_id, data);
+
+
+--
+-- Name: index_retorno_exportados_on_cartorio_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_retorno_exportados_on_cartorio_id ON distribuidor.retorno_exportados USING btree (cartorio_id);
 
 
 --
@@ -1093,6 +1228,13 @@ CREATE INDEX index_titulos_on_irregularidade_id ON distribuidor.titulos USING bt
 
 
 --
+-- Name: index_titulos_on_manifesto_distribuidor_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_titulos_on_manifesto_distribuidor_id ON distribuidor.titulos USING btree (manifesto_distribuidor_id);
+
+
+--
 -- Name: index_titulos_on_numero_protocolo_distribuido; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -1125,6 +1267,13 @@ CREATE UNIQUE INDEX index_titulos_on_protocolo_original ON distribuidor.titulos 
 --
 
 CREATE INDEX index_titulos_on_remessa_id ON distribuidor.titulos USING btree (remessa_id);
+
+
+--
+-- Name: index_titulos_on_retorno_exportado_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_titulos_on_retorno_exportado_id ON distribuidor.titulos USING btree (retorno_exportado_id);
 
 
 --
@@ -1179,6 +1328,22 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: retorno_exportados fk_rails_413e7df3c2; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.retorno_exportados
+    ADD CONSTRAINT fk_rails_413e7df3c2 FOREIGN KEY (apresentante_id) REFERENCES distribuidor.apresentantes(id);
+
+
+--
+-- Name: manifesto_distribuidores fk_rails_46797d5147; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.manifesto_distribuidores
+    ADD CONSTRAINT fk_rails_46797d5147 FOREIGN KEY (oficio_distribuidor_id) REFERENCES distribuidor.oficio_distribuidores(id);
+
+
+--
 -- Name: titulos fk_rails_505caea88e; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -1187,11 +1352,27 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: retorno_exportados fk_rails_528af44ec3; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.retorno_exportados
+    ADD CONSTRAINT fk_rails_528af44ec3 FOREIGN KEY (cartorio_id) REFERENCES distribuidor.cartorios(id);
+
+
+--
 -- Name: remessas fk_rails_5676734875; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
 ALTER TABLE ONLY distribuidor.remessas
     ADD CONSTRAINT fk_rails_5676734875 FOREIGN KEY (banco_id) REFERENCES distribuidor.bancos(id);
+
+
+--
+-- Name: titulos fk_rails_5bfa2fa924; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.titulos
+    ADD CONSTRAINT fk_rails_5bfa2fa924 FOREIGN KEY (manifesto_distribuidor_id) REFERENCES distribuidor.manifesto_distribuidores(id);
 
 
 --
@@ -1283,6 +1464,14 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: titulos fk_rails_fac3296de1; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.titulos
+    ADD CONSTRAINT fk_rails_fac3296de1 FOREIGN KEY (retorno_exportado_id) REFERENCES distribuidor.retorno_exportados(id);
+
+
+--
 -- Name: bancos fk_rails_fc3f5bb7be; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -1297,6 +1486,9 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260728140008'),
+('20260728140007'),
+('20260728140005'),
 ('20260728133151'),
 ('20260728133133'),
 ('20260721194014'),
