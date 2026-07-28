@@ -486,6 +486,132 @@ ALTER SEQUENCE distribuidor.oficio_distribuidores_id_seq OWNED BY distribuidor.o
 
 
 --
+-- Name: perfil_permissoes; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.perfil_permissoes (
+    id bigint NOT NULL,
+    perfil_id bigint NOT NULL,
+    permissao_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: perfil_permissoes_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.perfil_permissoes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: perfil_permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.perfil_permissoes_id_seq OWNED BY distribuidor.perfil_permissoes.id;
+
+
+--
+-- Name: perfil_usuarios; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.perfil_usuarios (
+    id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    perfil_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: perfil_usuarios_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.perfil_usuarios_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: perfil_usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.perfil_usuarios_id_seq OWNED BY distribuidor.perfil_usuarios.id;
+
+
+--
+-- Name: perfis; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.perfis (
+    id bigint NOT NULL,
+    nome character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: perfis_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.perfis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: perfis_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.perfis_id_seq OWNED BY distribuidor.perfis.id;
+
+
+--
+-- Name: permissoes; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.permissoes (
+    id bigint NOT NULL,
+    chave character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: permissoes_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.permissoes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.permissoes_id_seq OWNED BY distribuidor.permissoes.id;
+
+
+--
 -- Name: remessas; Type: TABLE; Schema: distribuidor; Owner: -
 --
 
@@ -567,6 +693,39 @@ ALTER SEQUENCE distribuidor.retorno_exportados_id_seq OWNED BY distribuidor.reto
 CREATE TABLE distribuidor.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: sessoes; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.sessoes (
+    id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    ip_address character varying,
+    user_agent character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: sessoes_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.sessoes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sessoes_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.sessoes_id_seq OWNED BY distribuidor.sessoes.id;
 
 
 --
@@ -666,6 +825,41 @@ CREATE SEQUENCE distribuidor.titulos_id_seq
 --
 
 ALTER SEQUENCE distribuidor.titulos_id_seq OWNED BY distribuidor.titulos.id;
+
+
+--
+-- Name: usuarios; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.usuarios (
+    id bigint NOT NULL,
+    login character varying NOT NULL,
+    nome character varying NOT NULL,
+    password_digest character varying NOT NULL,
+    ativo boolean DEFAULT true NOT NULL,
+    deve_trocar_senha boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.usuarios_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.usuarios_id_seq OWNED BY distribuidor.usuarios.id;
 
 
 --
@@ -795,6 +989,34 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores ALTER COLUMN id SET DEFAULT 
 
 
 --
+-- Name: perfil_permissoes id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_permissoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.perfil_permissoes_id_seq'::regclass);
+
+
+--
+-- Name: perfil_usuarios id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_usuarios ALTER COLUMN id SET DEFAULT nextval('distribuidor.perfil_usuarios_id_seq'::regclass);
+
+
+--
+-- Name: perfis id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfis ALTER COLUMN id SET DEFAULT nextval('distribuidor.perfis_id_seq'::regclass);
+
+
+--
+-- Name: permissoes id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.permissoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.permissoes_id_seq'::regclass);
+
+
+--
 -- Name: remessas id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -809,6 +1031,13 @@ ALTER TABLE ONLY distribuidor.retorno_exportados ALTER COLUMN id SET DEFAULT nex
 
 
 --
+-- Name: sessoes id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.sessoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.sessoes_id_seq'::regclass);
+
+
+--
 -- Name: tipo_titulos id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -820,6 +1049,13 @@ ALTER TABLE ONLY distribuidor.tipo_titulos ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY distribuidor.titulos ALTER COLUMN id SET DEFAULT nextval('distribuidor.titulos_id_seq'::regclass);
+
+
+--
+-- Name: usuarios id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.usuarios ALTER COLUMN id SET DEFAULT nextval('distribuidor.usuarios_id_seq'::regclass);
 
 
 --
@@ -942,6 +1178,38 @@ ALTER TABLE ONLY distribuidor.oficio_distribuidores
 
 
 --
+-- Name: perfil_permissoes perfil_permissoes_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_permissoes
+    ADD CONSTRAINT perfil_permissoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: perfil_usuarios perfil_usuarios_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_usuarios
+    ADD CONSTRAINT perfil_usuarios_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: perfis perfis_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfis
+    ADD CONSTRAINT perfis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: permissoes permissoes_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.permissoes
+    ADD CONSTRAINT permissoes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: remessas remessas_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -966,6 +1234,14 @@ ALTER TABLE ONLY distribuidor.schema_migrations
 
 
 --
+-- Name: sessoes sessoes_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.sessoes
+    ADD CONSTRAINT sessoes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tipo_titulos tipo_titulos_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -979,6 +1255,14 @@ ALTER TABLE ONLY distribuidor.tipo_titulos
 
 ALTER TABLE ONLY distribuidor.titulos
     ADD CONSTRAINT titulos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.usuarios
+    ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
 
 
 --
@@ -1130,6 +1414,62 @@ CREATE UNIQUE INDEX index_oficio_distribuidores_on_codigo_legado ON distribuidor
 
 
 --
+-- Name: index_perfil_permissoes_on_perfil_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_perfil_permissoes_on_perfil_id ON distribuidor.perfil_permissoes USING btree (perfil_id);
+
+
+--
+-- Name: index_perfil_permissoes_on_perfil_id_and_permissao_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_perfil_permissoes_on_perfil_id_and_permissao_id ON distribuidor.perfil_permissoes USING btree (perfil_id, permissao_id);
+
+
+--
+-- Name: index_perfil_permissoes_on_permissao_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_perfil_permissoes_on_permissao_id ON distribuidor.perfil_permissoes USING btree (permissao_id);
+
+
+--
+-- Name: index_perfil_usuarios_on_perfil_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_perfil_usuarios_on_perfil_id ON distribuidor.perfil_usuarios USING btree (perfil_id);
+
+
+--
+-- Name: index_perfil_usuarios_on_usuario_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_perfil_usuarios_on_usuario_id ON distribuidor.perfil_usuarios USING btree (usuario_id);
+
+
+--
+-- Name: index_perfil_usuarios_on_usuario_id_and_perfil_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_perfil_usuarios_on_usuario_id_and_perfil_id ON distribuidor.perfil_usuarios USING btree (usuario_id, perfil_id);
+
+
+--
+-- Name: index_perfis_on_nome; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_perfis_on_nome ON distribuidor.perfis USING btree (nome);
+
+
+--
+-- Name: index_permissoes_on_chave; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_permissoes_on_chave ON distribuidor.permissoes USING btree (chave);
+
+
+--
 -- Name: index_remessas_on_apresentante_id; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -1169,6 +1509,13 @@ CREATE UNIQUE INDEX index_retorno_exportados_on_cartorio_apresentante_data ON di
 --
 
 CREATE INDEX index_retorno_exportados_on_cartorio_id ON distribuidor.retorno_exportados USING btree (cartorio_id);
+
+
+--
+-- Name: index_sessoes_on_usuario_id; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE INDEX index_sessoes_on_usuario_id ON distribuidor.sessoes USING btree (usuario_id);
 
 
 --
@@ -1284,6 +1631,13 @@ CREATE INDEX index_titulos_on_tipo_titulo_id ON distribuidor.titulos USING btree
 
 
 --
+-- Name: index_usuarios_on_login; Type: INDEX; Schema: distribuidor; Owner: -
+--
+
+CREATE UNIQUE INDEX index_usuarios_on_login ON distribuidor.usuarios USING btree (login);
+
+
+--
 -- Name: index_vaga_distribuicoes_on_cartorio_id; Type: INDEX; Schema: distribuidor; Owner: -
 --
 
@@ -1309,6 +1663,14 @@ CREATE UNIQUE INDEX index_vaga_distribuicoes_on_data_cartorio_faixa ON distribui
 --
 
 CREATE INDEX index_vaga_distribuicoes_on_faixa_custa_id ON distribuidor.vaga_distribuicoes USING btree (faixa_custa_id);
+
+
+--
+-- Name: perfil_usuarios fk_rails_18fb1e832f; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_usuarios
+    ADD CONSTRAINT fk_rails_18fb1e832f FOREIGN KEY (usuario_id) REFERENCES distribuidor.usuarios(id);
 
 
 --
@@ -1376,6 +1738,14 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: perfil_usuarios fk_rails_5de9ecf9dd; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_usuarios
+    ADD CONSTRAINT fk_rails_5de9ecf9dd FOREIGN KEY (perfil_id) REFERENCES distribuidor.perfis(id);
+
+
+--
 -- Name: titulos fk_rails_683f443bcf; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -1416,6 +1786,14 @@ ALTER TABLE ONLY distribuidor.titulos
 
 
 --
+-- Name: perfil_permissoes fk_rails_91b38422bf; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_permissoes
+    ADD CONSTRAINT fk_rails_91b38422bf FOREIGN KEY (perfil_id) REFERENCES distribuidor.perfis(id);
+
+
+--
 -- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
@@ -1440,11 +1818,27 @@ ALTER TABLE ONLY distribuidor.devedor_solidarios
 
 
 --
+-- Name: sessoes fk_rails_a1acce47b4; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.sessoes
+    ADD CONSTRAINT fk_rails_a1acce47b4 FOREIGN KEY (usuario_id) REFERENCES distribuidor.usuarios(id);
+
+
+--
 -- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
 --
 
 ALTER TABLE ONLY distribuidor.active_storage_attachments
     ADD CONSTRAINT fk_rails_c3b3935057 FOREIGN KEY (blob_id) REFERENCES distribuidor.active_storage_blobs(id);
+
+
+--
+-- Name: perfil_permissoes fk_rails_d289325dbe; Type: FK CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.perfil_permissoes
+    ADD CONSTRAINT fk_rails_d289325dbe FOREIGN KEY (permissao_id) REFERENCES distribuidor.permissoes(id);
 
 
 --
@@ -1486,6 +1880,12 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260728170140'),
+('20260728170139'),
+('20260728170137'),
+('20260728170134'),
+('20260728165528'),
+('20260728165525'),
 ('20260728140008'),
 ('20260728140007'),
 ('20260728140005'),

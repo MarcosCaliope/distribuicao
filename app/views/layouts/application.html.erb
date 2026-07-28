@@ -23,6 +23,13 @@
   </head>
 
   <body>
+    <% if autenticado? %>
+      <p>
+        Usuário: <%= Current.usuario.nome %>
+        · <%= link_to "Trocar senha", edit_senha_path %>
+        · <%= button_to "Sair", sessao_path, method: :delete %>
+      </p>
+    <% end %>
     <%= yield %>
   </body>
 </html>

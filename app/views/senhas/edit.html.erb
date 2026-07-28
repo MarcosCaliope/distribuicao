@@ -1,0 +1,18 @@
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<h1>Trocar senha</h1>
+
+<% if Current.usuario.deve_trocar_senha %>
+  <p>É necessário trocar sua senha antes de continuar.</p>
+<% end %>
+
+<%= form_with url: senha_path, method: :patch do %>
+  <label>Senha atual<br>
+    <input type="password" name="senha_atual" required autocomplete="current-password"></label><br>
+  <label>Nova senha<br>
+    <input type="password" name="nova_senha" required autocomplete="new-password" maxlength="72"></label><br>
+  <label>Confirmar nova senha<br>
+    <input type="password" name="nova_senha_confirmacao" required autocomplete="new-password" maxlength="72"></label><br>
+  <button type="submit">Salvar</button>
+<% end %>

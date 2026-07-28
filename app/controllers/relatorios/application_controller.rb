@@ -1,14 +1,10 @@
 module Relatorios
-  # Trava provisória de acesso (não é Etapa 6 — autenticação de verdade com usuário/senha real
-  # ainda não existe neste app). Só o suficiente pra não deixar os relatórios, que expõem dado
-  # pessoal de devedores, completamente abertos até a Etapa 6 chegar.
+  # Autenticação (usuário logado) já vem de ApplicationController/Autenticacao por herança.
+  # Autorização de verdade (Etapa 6, substitui a trava provisória de HTTP Basic Auth da
+  # Etapa 5): só quem tem a permissão "ver_relatorios" (ver RelatorioPolicy) acessa qualquer
+  # relatório.
   class ApplicationController < ::ApplicationController
-    # Sem credencial configurada (credentials ou ENV), cai pra um valor aleatório por boot —
-    # não abre a tela sem querer, sem derrubar o app inteiro por falta de configuração.
-    http_basic_authenticate_with(
-      name: Rails.application.credentials.dig(:relatorios, :usuario) || ENV["RELATORIOS_USUARIO"] || SecureRandom.hex(8),
-      password: Rails.application.credentials.dig(:relatorios, :senha) || ENV["RELATORIOS_SENHA"] || SecureRandom.hex(8)
-    )
+    before_action { authorize :relatorio, :ver? }
 
     private
 

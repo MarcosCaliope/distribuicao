@@ -132,6 +132,28 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
     cad_titulos SET sefeitofalencia='Y' WHERE ... AND dat_rece BETWEEN ...` como efeito colateral
     de simplesmente gerar o relatório — uma tela de relatório (leitura) mutando dado. Não
     replicar: o relatório correspondente na Etapa 5 é uma leitura pura, sem `UPDATE` nenhum.
+14. **O sistema de login/permissões do legado é código morto.** `Sub Main` (`Appcode.bas`) tem
+    a chamada de `frmSisLogin.Show` inteira comentada — o EXE compilado hoje não pede login
+    nenhum, `frmmain.Show` acontece direto. `EXIGE_SENHA` continua declarada `True` mas não é
+    lida em lugar nenhum (o bloco que a checava foi comentado junto). A conexão `gcnSupervisor`
+    (onde ficam `tblUsuarios`/`tblPerfisCabeca`/`tblPerfisItens`/`tblProgramas`) também está
+    comentada — mesmo que algo chamasse `UsuarioAutorizado`/`NivelAcesso`, quebraria na hora por
+    falta de conexão. `ModIMP.ValidaAcesso` (o único wrapper que consultaria o flag de 5 bits
+    "10101" — incluir/alterar/excluir/processar/cancelar — por perfil×programa) está definida
+    mas não tem nenhum call site em nenhum form do Distribuidor. Ou seja: não existe hoje
+    nenhuma authorização em tempo real de execução no Distribuidor — a Etapa 6 não porta
+    comportamento legado nenhum aqui, constrói do zero.
+15. A cifra de senha do legado (`BibSenhas.EncriptaSenha`) é uma substituição monoalfabética
+    fixa sobre um alfabeto de 37 caracteres (`ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_` ↔
+    `GMPA9NO70ZBCQ3X8_TRHYW6D5EKJFSUV2L1I4`), sem sal, sem KDF, trivialmente reversível com a
+    mesma tabela — não é hash de verdade. Toda senha legada deve ser tratada como comprometida;
+    nenhuma senha do legado é migrada sob nenhuma circunstância na Etapa 6.
+16. `public.cad_usuario` (20 linhas, nomes reais, flag `usu_status` ativo/inativo) é a melhor
+    candidata a tabela de usuários pra importar na Etapa 6, mas nenhum arquivo VB6 na árvore
+    montada do legado lê ou escreve nela (grep exaustivo em toda a árvore Smart-suite, zero
+    ocorrências) — não é possível confirmar que essa tabela pertence de fato ao Distribuidor.
+    Decisão tomada com o usuário: importar mesmo assim (nome + login, nunca a senha), com troca
+    de senha obrigatória pra todo usuário importado antes de fazer qualquer coisa.
 
 ## Plano por etapas
 
@@ -142,8 +164,10 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
    normalizadas + ETL a partir das legadas?
 3. Convivência com o VB6: strangler fig (Rails novo aponta pro mesmo banco `Central`,
    corte tela por tela) vs corte único.
-4. Autenticação: substituir `BibSenhas`/`BibUsuarios` por Devise + bcrypt (reset de senha
-   obrigatório) — assumido como certo, a menos que haja objeção.
+4. Autenticação: substituir `BibSenhas`/`BibUsuarios` por autenticação de verdade (reset de
+   senha obrigatório) — assumido como certo, a menos que haja objeção. Resolvido na Etapa 6:
+   gerador nativo de autenticação do Rails 8 (`bin/rails generate authentication`), não Devise
+   — mais leve, código totalmente do próprio app, sem necessidade de OmniAuth/2FA hoje.
 
 **Etapa 1 — Fundação (concluída)**: Rails 8.0.5 / Ruby 3.4.5 novo neste diretório.
 
@@ -284,8 +308,13 @@ omissão. O agrupamento exato do modo "Sintético" de Por Apresentante não pôd
 `.rpt` é um binário Crystal Reports, ilegível) — a versão Rails assume agrupamento por cartório,
 premissa a validar contra uso real, não fato confirmado.
 
-**Etapa 6 — Autenticação/autorização**: Devise + bcrypt; permissões via Pundit/CanCanCan
-com tabela `Role`/`Permission` de verdade.
+**Etapa 6 — Autenticação/autorização**: gerador nativo do Rails 8 (`Usuario`/`Sessao`, não
+Devise) + Pundit, com tabela `Perfil`/`Permissao` de verdade (muitos-para-muitos, não uma coluna
+`role`). O sistema de login/permissões do legado é código morto (item 14 acima) — nada aqui é
+port de comportamento legado, é construção nova. Usuários iniciais vêm de um import best-effort
+de `public.cad_usuario` (item 16 acima), separado do `db:seed` automático (a tabela legada não
+existe no Postgres limpo que o CI usa). Escopo por cartório fica de fora deliberadamente — sem
+precedente no legado e sem tela de CRUD hoje que precise disso.
 
 **Etapa 7 — Migração de dados + validação em paralelo**: ETL das tabelas legadas, suite de
 comparação campo a campo reimportando remessas históricas nos dois sistemas.
