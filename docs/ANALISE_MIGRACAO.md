@@ -78,7 +78,8 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
 
 1. `ModIMP.DistribuirTituloUnico` calcula o sorteio por faixa mas **descarta o resultado** e
    usa só o rodízio simples — enquanto `frmDistribuicaoNew.cmdProcessar_Click` usa o sorteio
-   por faixa de fato. Dois caminhos de distribuição com regras diferentes hoje.
+   por faixa de fato. Dois caminhos de distribuição com regras diferentes hoje. Resolvido: ver
+   Etapa 3 abaixo — porta-se o comportamento de `cmdProcessar_Click` (tela principal).
 2. `cmdDesfaz_Click` (desfazer distribuição) filtra por `txtDtRecebimento` em vez de
    `txtDtDistribuicao` — parece bug de digitação, já que o campo limpo é `dat_dist`.
 3. `FormCheckCancelar` (trava "não cancela import já distribuído") tem o corpo comentado —
@@ -204,8 +205,12 @@ Testado com o arquivo real `D0010706.211` (15 títulos: 14 `DMI` regulares + 1 `
 irregular por espécie não cadastrada) — 17 testes automatizados em
 `test/services/remessa_importacao/` (rubocop limpo).
 
-**Etapa 3 — Distribuição/rodízio**: definir com o usuário qual dos dois comportamentos
-divergentes do VB6 é o correto antes de portar; resolver a condição de corrida do
+**Etapa 3 — Distribuição/rodízio**: portar o comportamento de
+`frmDistribuicaoNew.cmdProcessar_Click` (sorteio por faixa de valor via `cad_faixas`) — é a
+tela principal usada pelos cartórios no dia a dia; confirmado com o usuário em 2026-07-28.
+`ModIMP.DistribuirTituloUnico` (que calcula o sorteio por faixa e descarta o resultado, caindo
+no rodízio simples) é caminho raramente usado e **não deve ser replicado** — tratar como o bug
+que é, não como comportamento alternativo válido. Resolver a condição de corrida do
 `UPDATE ... WHERE blivre=true` sem lock via transação + lock otimista/pessimista.
 
 **Etapa 4 — Exportação/manifestos**: manifesto por ofício distribuidor + retorno por
