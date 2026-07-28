@@ -94,6 +94,17 @@ legacy source comments — see `docs/ANALISE_MIGRACAO.md` for the specific discr
 (e.g. valor is at byte 247, not 261 as the legacy code comment claims). Treat the fixture files
 as the ground truth if a byte offset looks suspicious.
 
+`Importador`'s own class-level comment lists the specific points where it intentionally departs
+from legacy behavior (irregular título with unregistered `tipo_titulo` gets a null FK instead of
+the legacy `'*'` sentinel, `protocolo_original` is left blank for new títulos, `cpf_cnpj` keeps
+leading zeros instead of round-tripping through a `Double` like the VB6 code does) — check it
+alongside `docs/ANALISE_MIGRACAO.md` before "fixing" something that looks like a discrepancy.
+
+The praça/cidade crítica (irregularidade 15) compares against a "cidade sede" that was
+hardcoded to `"FORTALEZA"` in the legacy VB6 (`frmImpTitulos.frm`); here it's
+`config.x.remessa.cidade_sede`, overridable via the `REMESSA_CIDADE_SEDE` env var, so the app
+isn't locked to one client's comarca.
+
 ## Model layer
 
 Models under `app/models/` currently hold validations and associations only — no business
