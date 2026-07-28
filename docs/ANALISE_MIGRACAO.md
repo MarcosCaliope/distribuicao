@@ -128,6 +128,10 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
     (ver Etapa 4), a ausência de controle de duplicidade viraria reenvio duplicado em caso de
     retry — por isso a Etapa 4 introduz rastreamento novo (`titulo.manifesto_distribuidor_id`/
     `retorno_exportado_id`) que não existe no legado, decisão tomada com o usuário.
+13. `frmRelArrecadacaoNew2.cmdImprimir_Click` (relatório "RelArrecadacao") executa `UPDATE
+    cad_titulos SET sefeitofalencia='Y' WHERE ... AND dat_rece BETWEEN ...` como efeito colateral
+    de simplesmente gerar o relatório — uma tela de relatório (leitura) mutando dado. Não
+    replicar: o relatório correspondente na Etapa 5 é uma leitura pura, sem `UPDATE` nenhum.
 
 ## Plano por etapas
 
@@ -262,8 +266,23 @@ lugar nenhum), esses subcampos saem em branco por ora — lacuna conhecida, não
 silenciosa. O envio por e-mail (só do retorno, não do manifesto) via job assíncrono é
 comportamento novo, não uma port: o legado nunca teve fila de verdade (ver item 12 acima).
 
-**Etapa 5 — Relatórios**: consolidar os 11 relatórios Crystal Reports (dirigidos por só 6
-telas) numa única concern de relatório Rails (HTML/PDF via Prawn ou WickedPDF).
+**Etapa 5 — Relatórios**: consolidar os relatórios Crystal Reports numa única concern de
+relatório Rails (HTML/PDF via Prawn). Correção ao parágrafo original desta etapa: são **8
+telas, não 6** (`frmRelTitulos.frm`, `frmRelArrecadacaoNew2.frm`, `frmRelSMT.frm`,
+`frmRelRankingDevedor.frm`, `frmCadApresentantes.frm` no domínio Distribuidor; `fmrCadTestamentos.frm`,
+`frmCadEscrInterior.frm`, `frmCadEscrCapital.frm` nos domínios irmãos Testamentos/Escrituras) —
+das quais só **4 telas / 7 modos de relatório** são de fato do domínio Distribuidor:
+`frmRelTitulos.frm` (Eventuais, Por Apresentante com alternância Sintético, Por Devedor),
+`frmRelArrecadacaoNew2.frm` (Arrecadação, Total de Títulos), `frmRelRankingDevedor.frm`
+(Ranking) e `frmCadApresentantes.frm` (roster de apresentantes, 5 modos de ordenação/filtro).
+`frmRelSMT.frm` consulta `smt_registro`/`smt_devedor`, tabelas que a própria seção "Schema real"
+deste documento já lista como fora do domínio Distribuidor — tratado como fora de escopo, igual
+aos 3 telas de Testamentos/Escrituras. O relatório de Arrecadação do legado mistura contagens de
+títulos com Escrituras/Testamentos; como nenhum dos dois sistemas irmãos é modelado neste app
+(fora do MVP, ver Fase 0), a versão Rails cobre só títulos — lacuna de escopo conhecida, não uma
+omissão. O agrupamento exato do modo "Sintético" de Por Apresentante não pôde ser confirmado (o
+`.rpt` é um binário Crystal Reports, ilegível) — a versão Rails assume agrupamento por cartório,
+premissa a validar contra uso real, não fato confirmado.
 
 **Etapa 6 — Autenticação/autorização**: Devise + bcrypt; permissões via Pundit/CanCanCan
 com tabela `Role`/`Permission` de verdade.

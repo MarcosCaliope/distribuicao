@@ -1,0 +1,8 @@
+<%= form_with url: relatorios_arrecadacao_total_titulos_path, method: :get, local: true do %>
+  <label>De <input type="date" name="data_inicio" value="<%= params[:data_inicio] %>"></label>
+  <label>Até <input type="date" name="data_fim" value="<%= params[:data_fim] %>"></label>
+  <button type="submit">Filtrar</button>
+  <%= link_to "Baixar PDF", relatorios_arrecadacao_total_titulos_path(request.query_parameters.merge(format: :pdf)) %>
+<% end %>
+
+<%= render "relatorios/tabela", dataset: @dataset %>

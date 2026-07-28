@@ -1,0 +1,7 @@
+<%= form_with url: relatorios_titulos_por_devedor_path, method: :get, local: true do %>
+  <label>CPF/CNPJ <input type="text" name="cpf_cnpj" value="<%= params[:cpf_cnpj] %>"></label>
+  <button type="submit">Filtrar</button>
+  <%= link_to "Baixar PDF", relatorios_titulos_por_devedor_path(request.query_parameters.merge(format: :pdf)) if @dataset %>
+<% end %>
+
+<%= render "relatorios/tabela", dataset: @dataset if @dataset %>

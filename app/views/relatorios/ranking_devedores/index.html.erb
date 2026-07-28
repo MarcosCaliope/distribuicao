@@ -1,0 +1,11 @@
+<%= form_with url: relatorios_ranking_devedores_path, method: :get, local: true do %>
+  <label>De <input type="date" name="data_inicio" value="<%= params[:data_inicio] %>"></label>
+  <label>Até <input type="date" name="data_fim" value="<%= params[:data_fim] %>"></label>
+  <label>Limite <input type="number" name="limite" value="<%= params[:limite].presence || 100 %>"></label>
+  <label>Faixa mínima <input type="number" name="faixa_minima" value="<%= params[:faixa_minima] %>"></label>
+  <label>Faixa máxima <input type="number" name="faixa_maxima" value="<%= params[:faixa_maxima] %>"></label>
+  <button type="submit">Filtrar</button>
+  <%= link_to "Baixar PDF", relatorios_ranking_devedores_path(request.query_parameters.merge(format: :pdf)) %>
+<% end %>
+
+<%= render "relatorios/tabela", dataset: @dataset %>

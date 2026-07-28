@@ -1,0 +1,14 @@
+<%= form_with url: relatorios_apresentantes_path, method: :get, local: true do %>
+  <label>
+    Modo
+    <select name="modo">
+      <% Relatorios::ApresentantesRoster::MODOS.each do |valor, rotulo| %>
+        <option value="<%= valor %>" <%= "selected" if params[:modo] == valor %>><%= rotulo %></option>
+      <% end %>
+    </select>
+  </label>
+  <button type="submit">Filtrar</button>
+  <%= link_to "Baixar PDF", relatorios_apresentantes_path(request.query_parameters.merge(format: :pdf)) %>
+<% end %>
+
+<%= render "relatorios/tabela", dataset: @dataset %>

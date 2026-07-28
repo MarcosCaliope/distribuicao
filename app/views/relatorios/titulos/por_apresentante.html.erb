@@ -1,0 +1,20 @@
+<%= form_with url: relatorios_titulos_por_apresentante_path, method: :get, local: true do %>
+  <label>De <input type="date" name="data_inicio" value="<%= params[:data_inicio] %>"></label>
+  <label>Até <input type="date" name="data_fim" value="<%= params[:data_fim] %>"></label>
+  <label>
+    Apresentante
+    <select name="apresentante_id">
+      <option value="">Selecione...</option>
+      <% @apresentantes.each do |apresentante| %>
+        <option value="<%= apresentante.id %>" <%= "selected" if params[:apresentante_id].to_s == apresentante.id.to_s %>>
+          <%= apresentante.nome %>
+        </option>
+      <% end %>
+    </select>
+  </label>
+  <label><input type="checkbox" name="sintetico" value="1" <%= "checked" if params[:sintetico] == "1" %>> Sintético</label>
+  <button type="submit">Filtrar</button>
+  <%= link_to "Baixar PDF", relatorios_titulos_por_apresentante_path(request.query_parameters.merge(format: :pdf)) if @dataset %>
+<% end %>
+
+<%= render "relatorios/tabela", dataset: @dataset if @dataset %>
