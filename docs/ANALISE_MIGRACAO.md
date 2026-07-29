@@ -347,4 +347,68 @@ arquivos de remessa históricos a partir de `tblremessas.sregistro`, roda pelo
 portada contra dado histórico real em escala, sem gravar nada.
 
 **Etapa 8 — Corte**: strangler fig tela por tela, desligando a tela equivalente no VB6
-conforme cada parte entra em produção no Rails.
+conforme cada parte entra em produção no Rails. Plano detalhado abaixo é uma proposta
+(2026-07-29), ainda **não confirmada com o usuário** nos pontos marcados como pergunta aberta —
+diferente das etapas anteriores, que documentam decisão já tomada.
+
+**Lacuna que bloqueia qualquer corte**: hoje só Relatórios e Autenticação têm UI de verdade
+(`app/controllers/relatorios/*`, `sessoes_controller`, `senhas_controller`).
+`RemessaImportacao::Importador`, `Distribuicao::Processador` e
+`Exportacao::Gerador{Manifesto,Retorno}` não têm **nenhum ponto de entrada em produção** — nem
+controller, nem task rake, nada além de teste (e, no caso do `Importador`, o uso interno do
+`Etl::ValidadorReplayHistorico`). Corte tela por tela pressupõe uma tela Rails equivalente pro
+operador usar; construir esses pontos de entrada é pré-requisito, não é em si um passo de corte.
+
+Mapeamento tela legada → status Rails:
+
+| Tela legada | Equivalente Rails | Status |
+|---|---|---|
+| `frmCorrigeRemessa.frm` (correção manual de bytes pré-import) | — | Não portado; pergunta aberta 1 abaixo |
+| `frmImpTitulos.frm` (importação) | `RemessaImportacao::Importador` | Lógica pronta, **sem UI/gatilho** |
+| `frmDistribuicaoNew.frm` (distribuição/rodízio) | `Distribuicao::Processador` | Lógica pronta, **sem UI/gatilho** |
+| `frmExportaTitulosDistribuicao.frm` / `frmExportaTitulos.frm` | `Exportacao::Gerador{Manifesto,Retorno}` | Lógica pronta, **sem UI/gatilho**; envio agora é automático (`EnvioRetornoJob`) em vez do "clicar Enviar" manual do legado |
+| `frmRelTitulos`/`frmRelArrecadacaoNew2`/`frmRelRankingDevedor`/`frmCadApresentantes` (relatórios) | `app/controllers/relatorios/*` | **Concluído**, UI completa |
+| `frmSisLogin.frm` (login) | `Usuario`/`Sessao` | Concluído — mas o próprio login legado já está com a chamada comentada no EXE compilado (item 14 acima), ou seja, não há tela legada ativa pra "desligar" aqui; é controle de acesso novo, não substituição |
+
+Perguntas abertas a confirmar com o usuário antes de sequenciar (não dá pra responder só olhando
+o código):
+
+1. **`frmCorrigeRemessa`** ainda é necessária? Se os padrões de byte ruim que ela corrige já
+   são cobertos pela validação do próprio `Importador`, aposentar; senão, precisa de port.
+2. **CRUD das tabelas de dimensão** (cartórios, bancos, apresentantes, tipos de título, faixas
+   de custa) — hoje só existem via os importadores ETL da Etapa 7 (só criação inicial, sem
+   edição). Se o legado tem telas de cadastro separadas pra essas tabelas ainda em uso ativo
+   (ex.: cadastrar um cartório novo), o Rails precisa de CRUD equivalente antes do corte, ou
+   essas telas ficam no VB6 apontando pro mesmo banco indefinidamente.
+3. **Testamentos/Escrituras/SIAC** — confirmado fora de escopo desta migração (Fase 0), mas
+   dividem a mesma instância Postgres; vale confirmação explícita de que o corte aqui não
+   afeta essas telas.
+4. **Mudança do envio de retorno por e-mail** — passar a enviar automaticamente via
+   `EnvioRetornoJob` é uma mudança de processo pra quem trabalha no cartório (sem mais o botão
+   manual de enviar). Precisa de aval de quem usa a tela hoje, não só revisão de código.
+
+Sequenciamento proposto:
+
+- **Fase 0 — Construir os pontos de entrada que faltam.** Um controller (ou ação
+  administrativa) pra upload de remessa chamando `RemessaImportacao::Importador`, um gatilho
+  pra `Distribuicao::Processador#processar` (botão ou job agendado), e um pra
+  `Exportacao::Gerador*`. Nenhuma tela legada desliga ainda — isso só torna o Rails operável.
+- **Fase 1 — Relatórios (já pronto).** Menor risco: só leitura, os dois sistemas podem rodar em
+  paralelo indefinidamente, rollback trivial (apontar o usuário de volta pra tela VB6). Cortar
+  primeiro.
+- **Fase 2 — Autenticação.** Não é substituição (ver tabela acima) — só ativar a exigência
+  assim que os operadores de verdade tiverem conta (`usuarios:importar_legado` já cobre a carga
+  inicial única).
+- **Fase 3 — Importação, em modo sombra primeiro.** Ponto de entrada de maior risco (dado
+  ligado a dinheiro). Não cortar direto: rodar o import Rails em paralelo com o VB6 por uma
+  janela, comparando resultado do mesmo jeito que `Etl::ValidadorReplayHistorico` já valida
+  replay histórico — estender essa comparação pra remessas *ao vivo* chegando antes de desligar
+  `frmImpTitulos`.
+- **Fase 4 — Distribuição + Exportação, juntas, corte direto por dia.** Não dá pra rodar em
+  modo sombra contra o mesmo dado ao vivo — os dois sistemas competiriam pelas mesmas vagas de
+  distribuição e sequência de protocolo. Precisa ser um corte limpo num dia escolhido
+  (idealmente de baixo volume), com `Distribuicao::Desfazedor` como caminho de rollback
+  documentado se a distribuição daquele dia precisar ser desfeita. Exportação corta junto ou
+  logo em seguida, já que lê a atribuição de cartório/ofício que a distribuição acabou de
+  gravar.
+- **Fase 5 — Aposentar `frmCorrigeRemessa`** assim que a pergunta aberta 1 acima for resolvida.
