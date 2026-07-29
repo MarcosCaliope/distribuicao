@@ -208,6 +208,40 @@ the dev DB has the *real* restored legacy data. A throwaway verification script 
 operation in test, but a real, unscoped mutation in dev — scope every statement narrowly (a
 `WHERE` clause, not a bare table name) if you're touching `public.*` outside the test DB.
 
+## Operações — corte/cutover entry points (Etapa 8, `app/controllers/operacoes/`)
+
+Etapas 2–5 only exposed their services through tests — no controller, no rake task, nothing a
+real operator could click. A strangler-fig cutover (see `docs/ANALISE_MIGRACAO.md`'s "Plano por
+etapas", Fases 0–5) needs an operator-usable Rails screen before any VB6 screen can be retired,
+so Etapa 8 added the missing entry points rather than new business logic:
+
+- `Operacoes::RemessasController#create` uploads a file straight into
+  `RemessaImportacao::Importador`; `DistribuicoesController#create`/`#destroy` call
+  `Distribuicao::Processador`/`Desfazedor`; `ExportacoesController#create` calls both
+  `Exportacao::Gerador{Manifesto,Retorno}`. All run synchronously (no background job — daily
+  volume doesn't need one) and share one `OperacaoPolicy`/`operar_distribuicao` permission; don't
+  split it into finer-grained permissions without a real reason, since nothing today
+  distinguishes who's allowed to do which of these.
+- `ValidacoesSombraController#index` lists `ValidacaoSombraExecucao` rows. `Etl::ValidacaoSombraJob`
+  (scheduled daily in `config/recurring.yml` via Solid Queue) reruns the existing
+  `Etl::ValidadorReplayHistorico` — unmodified — for the previous day and persists the result,
+  because nobody would tail a rake task's stdout during a multi-week shadow-validation window.
+  The `etl:validar_replay_historico` rake task itself is untouched and still the tool for one-off
+  historical analysis over an arbitrary date range.
+- `Relatorios::MenuController` (mounted at both `/` and `/relatorios`) is the first real
+  navigable entry point for the 7 report modes from Etapa 5 — before this there was no root
+  route and no link between them, only direct URLs (this exact gap was flagged in a comment in
+  `Autenticacao#url_apos_autenticacao`, now resolved).
+
+Two Rails pluralization gotchas hit while building this, both fixed the same way (an irregular
+inflection, not a workaround): `resource :exportacao` and a model named `*Execucao` both
+pluralize wrong under English rules (`exportacaos`, not `exportacoes`) — see the `"exportacao"`/
+`"execucao"` entries in `config/initializers/inflections.rb`. Separately, `resources
+:validacoes_sombra` (a resource name containing an underscore) makes Rails generate an
+`..._index` path helper suffix instead of the expected bare name — sidestepped by using an
+explicit `get ..., as: :validacoes_sombra` instead of `resources`, matching how `relatorios`
+routes already do plain `get` for simple index-style pages.
+
 ## Model layer
 
 Models under `app/models/` hold validations, associations, and scopes only (plus the odd
@@ -223,7 +257,11 @@ field in place for both purposes. Keep them separate in any new code.
 
 Etapas 3–7 of the migration plan (distribution/rotation, export/manifests, reports, auth, and
 legacy-data ETL) are all implemented — see the corresponding sections above and
-`docs/ANALISE_MIGRACAO.md`'s "Plano por etapas" for what each covers. Remaining: Etapa 8 (cutover).
+`docs/ANALISE_MIGRACAO.md`'s "Plano por etapas" for what each covers. Etapa 8 (cutover)'s code
+side is also done (see Operações section above) — what's left across all its phases is
+operational/business decisions only the user can make (running the one-time legacy user import
+against real data, how long to run shadow validation, which day to cut over
+distribuição/exportação), not code, and is tracked in `docs/ANALISE_MIGRACAO.md` rather than here.
 
 ## Tests
 
