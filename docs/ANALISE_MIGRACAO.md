@@ -363,7 +363,7 @@ Mapeamento tela legada → status Rails:
 
 | Tela legada | Equivalente Rails | Status |
 |---|---|---|
-| `frmCorrigeRemessa.frm` (correção manual de bytes pré-import) | — | Não portado; pergunta aberta 1 abaixo |
+| `frmCorrigeRemessa.frm` (correção manual de bytes pré-import) | — | Não portado; **aposentado sem port** (ver Fase 5 e item 1 abaixo) |
 | `frmImpTitulos.frm` (importação) | `RemessaImportacao::Importador` | Lógica pronta, **sem UI/gatilho** |
 | `frmDistribuicaoNew.frm` (distribuição/rodízio) | `Distribuicao::Processador` | Lógica pronta, **sem UI/gatilho** |
 | `frmExportaTitulosDistribuicao.frm` / `frmExportaTitulos.frm` | `Exportacao::Gerador{Manifesto,Retorno}` | Lógica pronta, **sem UI/gatilho**; envio agora é automático (`EnvioRetornoJob`) em vez do "clicar Enviar" manual do legado |
@@ -373,8 +373,9 @@ Mapeamento tela legada → status Rails:
 Perguntas abertas a confirmar com o usuário antes de sequenciar (não dá pra responder só olhando
 o código):
 
-1. **`frmCorrigeRemessa`** ainda é necessária? Se os padrões de byte ruim que ela corrige já
-   são cobertos pela validação do próprio `Importador`, aposentar; senão, precisa de port.
+1. ~~**`frmCorrigeRemessa`** ainda é necessária?~~ **Resolvida (2026-07-29)**: confirmado com o
+   usuário que os padrões de byte ruim que ela corrigia não ocorrem mais nos arquivos de remessa
+   reais de hoje — aposentar sem portar nada, ver Fase 5.
 2. **CRUD das tabelas de dimensão** (cartórios, bancos, apresentantes, tipos de título, faixas
    de custa) — hoje só existem via os importadores ETL da Etapa 7 (só criação inicial, sem
    edição). Se o legado tem telas de cadastro separadas pra essas tabelas ainda em uso ativo
@@ -444,4 +445,7 @@ Sequenciamento proposto:
   `Distribuicao::Desfazedor` de verdade — quem estiver de plantão no dia do corte não precisa
   de acesso a `rails console` pra reverter. **Ainda pendente**: escolher o dia de baixo volume e
   executar o corte é decisão do usuário, não conclui com código.
-- **Fase 5 — Aposentar `frmCorrigeRemessa`** assim que a pergunta aberta 1 acima for resolvida.
+- **Fase 5 — Aposentar `frmCorrigeRemessa` (concluída).** Pergunta aberta 1 resolvida com o
+  usuário (2026-07-29): os padrões de byte ruim que essa tela corrigia não ocorrem mais nos
+  arquivos de remessa reais — nada a portar. Ação puramente operacional (desligar a tela no
+  VB6, se ainda estiver acessível), sem lacuna de código nem entrada correspondente no Rails.
