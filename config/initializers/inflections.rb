@@ -23,6 +23,7 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "distribuidor", "distribuidores"
   inflect.irregular "distribuicao", "distribuicoes"
   inflect.irregular "exportacao", "exportacoes"
+  inflect.irregular "execucao", "execucoes"
   inflect.irregular "perfil", "perfis"
   inflect.irregular "permissao", "permissoes"
   inflect.irregular "sessao", "sessoes"

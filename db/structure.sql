@@ -898,6 +898,43 @@ ALTER SEQUENCE distribuidor.vaga_distribuicoes_id_seq OWNED BY distribuidor.vaga
 
 
 --
+-- Name: validacao_sombra_execucoes; Type: TABLE; Schema: distribuidor; Owner: -
+--
+
+CREATE TABLE distribuidor.validacao_sombra_execucoes (
+    id bigint NOT NULL,
+    data_inicio date NOT NULL,
+    data_fim date NOT NULL,
+    arquivos_processados integer DEFAULT 0 NOT NULL,
+    titulos_comparados integer DEFAULT 0 NOT NULL,
+    titulos_batendo integer DEFAULT 0 NOT NULL,
+    arquivos_com_erro jsonb DEFAULT '[]'::jsonb NOT NULL,
+    mismatches jsonb DEFAULT '[]'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: validacao_sombra_execucoes_id_seq; Type: SEQUENCE; Schema: distribuidor; Owner: -
+--
+
+CREATE SEQUENCE distribuidor.validacao_sombra_execucoes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: validacao_sombra_execucoes_id_seq; Type: SEQUENCE OWNED BY; Schema: distribuidor; Owner: -
+--
+
+ALTER SEQUENCE distribuidor.validacao_sombra_execucoes_id_seq OWNED BY distribuidor.validacao_sombra_execucoes.id;
+
+
+--
 -- Name: active_storage_attachments id; Type: DEFAULT; Schema: distribuidor; Owner: -
 --
 
@@ -1063,6 +1100,13 @@ ALTER TABLE ONLY distribuidor.usuarios ALTER COLUMN id SET DEFAULT nextval('dist
 --
 
 ALTER TABLE ONLY distribuidor.vaga_distribuicoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.vaga_distribuicoes_id_seq'::regclass);
+
+
+--
+-- Name: validacao_sombra_execucoes id; Type: DEFAULT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.validacao_sombra_execucoes ALTER COLUMN id SET DEFAULT nextval('distribuidor.validacao_sombra_execucoes_id_seq'::regclass);
 
 
 --
@@ -1271,6 +1315,14 @@ ALTER TABLE ONLY distribuidor.usuarios
 
 ALTER TABLE ONLY distribuidor.vaga_distribuicoes
     ADD CONSTRAINT vaga_distribuicoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: validacao_sombra_execucoes validacao_sombra_execucoes_pkey; Type: CONSTRAINT; Schema: distribuidor; Owner: -
+--
+
+ALTER TABLE ONLY distribuidor.validacao_sombra_execucoes
+    ADD CONSTRAINT validacao_sombra_execucoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1880,6 +1932,7 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260729134314'),
 ('20260728170140'),
 ('20260728170139'),
 ('20260728170137'),

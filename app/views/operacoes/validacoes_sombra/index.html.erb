@@ -1,0 +1,30 @@
+<h1>Validação Sombra da Importação</h1>
+
+<% if @execucoes.empty? %>
+  <p>Nenhuma execução registrada ainda.</p>
+<% else %>
+  <table border="1" cellpadding="4" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Arquivos processados</th>
+        <th>Arquivos com erro</th>
+        <th>Títulos comparados</th>
+        <th>Batendo</th>
+        <th>Divergências</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @execucoes.each do |execucao| %>
+        <tr>
+          <td><%= execucao.data_inicio %></td>
+          <td><%= execucao.arquivos_processados %></td>
+          <td><%= execucao.arquivos_com_erro.size %></td>
+          <td><%= execucao.titulos_comparados %></td>
+          <td><%= execucao.titulos_batendo %></td>
+          <td><%= execucao.divergencias %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -417,11 +417,20 @@ Sequenciamento proposto:
   compartilhado. Sem fluxo de "esqueci minha senha" (ver comentário em
   `SenhasController` — sem SMTP configurado ainda e usuários importados não têm e-mail
   confirmado); se uma senha temporária se perder, é reset manual via console por ora.
-- **Fase 3 — Importação, em modo sombra primeiro.** Ponto de entrada de maior risco (dado
-  ligado a dinheiro). Não cortar direto: rodar o import Rails em paralelo com o VB6 por uma
-  janela, comparando resultado do mesmo jeito que `Etl::ValidadorReplayHistorico` já valida
-  replay histórico — estender essa comparação pra remessas *ao vivo* chegando antes de desligar
-  `frmImpTitulos`.
+- **Fase 3 — Importação, em modo sombra primeiro (automação construída, janela de observação
+  pendente).** Ponto de entrada de maior risco (dado ligado a dinheiro). Não cortar direto: rodar
+  o import Rails em paralelo com o VB6 por uma janela, comparando resultado do mesmo jeito que
+  `Etl::ValidadorReplayHistorico` já valida replay histórico. Construído: `Etl::ValidacaoSombraJob`
+  (`app/jobs/etl/validacao_sombra_job.rb`) roda esse mesmo validador uma vez por dia (agendado em
+  `config/recurring.yml`, Solid Queue, todo dia às 6h, sobre o dia anterior já fechado) e persiste
+  cada rodada em `ValidacaoSombraExecucao` — sem isso ninguém ia acompanhar log de job por
+  semanas. Tela de histórico em `Operacoes::ValidacoesSombraController`
+  (`/operacoes/validacoes_sombra`, mesma permissão `operar_distribuicao` das outras telas da Fase
+  0) lista arquivos processados/títulos comparados/batendo/divergências por dia. A task rake
+  `etl:validar_replay_historico` continua intacta pra análise histórica manual ad-hoc (intervalo
+  arbitrário, sem persistir) — usos diferentes, não foi unificada com o job. **Ainda pendente**:
+  a janela de observação em si (rodar por tempo suficiente acumulando dias sem divergência antes
+  de desligar `frmImpTitulos`) é decisão do usuário, não algo que se conclui escrevendo código.
 - **Fase 4 — Distribuição + Exportação, juntas, corte direto por dia.** Não dá pra rodar em
   modo sombra contra o mesmo dado ao vivo — os dois sistemas competiriam pelas mesmas vagas de
   distribuição e sequência de protocolo. Precisa ser um corte limpo num dia escolhido
