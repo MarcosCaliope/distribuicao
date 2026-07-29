@@ -380,13 +380,14 @@ o código):
    de custa) — hoje só existem via os importadores ETL da Etapa 7 (só criação inicial, sem
    edição). Se o legado tem telas de cadastro separadas pra essas tabelas ainda em uso ativo
    (ex.: cadastrar um cartório novo), o Rails precisa de CRUD equivalente antes do corte, ou
-   essas telas ficam no VB6 apontando pro mesmo banco indefinidamente.
+   essas telas ficam no VB6 apontando pro mesmo banco indefinidamente. **Pendente.**
 3. **Testamentos/Escrituras/SIAC** — confirmado fora de escopo desta migração (Fase 0), mas
    dividem a mesma instância Postgres; vale confirmação explícita de que o corte aqui não
-   afeta essas telas.
+   afeta essas telas. **Pendente.**
 4. **Mudança do envio de retorno por e-mail** — passar a enviar automaticamente via
    `EnvioRetornoJob` é uma mudança de processo pra quem trabalha no cartório (sem mais o botão
    manual de enviar). Precisa de aval de quem usa a tela hoje, não só revisão de código.
+   **Pendente.**
 
 Sequenciamento proposto:
 
