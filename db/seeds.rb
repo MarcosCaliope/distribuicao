@@ -89,10 +89,9 @@ IRREGULARIDADES.each do |codigo, descricao|
   Irregularidade.find_or_create_by!(codigo: codigo) { |i| i.descricao = descricao }
 end
 
-# Permissões e perfis (Etapa 6). Só existe "ver_relatorios" hoje porque só existem telas de
-# leitura (Etapa 5) — "administrador" e "operador" ainda não se diferenciam na prática; a
-# distinção ganha sentido quando telas de CRUD de verdade existirem.
-PERMISSOES = %w[ver_relatorios].freeze
+# Permissões e perfis (Etapa 6). "administrador" e "operador" ainda não se diferenciam na
+# prática; a distinção ganha sentido quando telas de CRUD de verdade existirem.
+PERMISSOES = %w[ver_relatorios operar_distribuicao].freeze
 PERFIS = %w[administrador operador].freeze
 
 permissoes = PERMISSOES.map { |chave| Permissao.find_or_create_by!(chave: chave) }

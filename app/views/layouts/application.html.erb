@@ -29,6 +29,13 @@
         · <%= link_to "Trocar senha", edit_senha_path %>
         · <%= button_to "Sair", sessao_path, method: :delete %>
       </p>
+      <% if Current.usuario.tem_permissao?("operar_distribuicao") %>
+        <p>
+          <%= link_to "Importar remessa", new_operacoes_remessa_path %>
+          · <%= link_to "Processar distribuição", new_operacoes_distribuicao_path %>
+          · <%= link_to "Gerar exportação", new_operacoes_exportacao_path %>
+        </p>
+      <% end %>
     <% end %>
     <%= yield %>
   </body>

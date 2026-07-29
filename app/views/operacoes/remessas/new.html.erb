@@ -1,0 +1,9 @@
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<h1>Importar Remessa</h1>
+
+<%= form_with url: operacoes_remessas_path, method: :post, multipart: true do %>
+  <%= file_field_tag :arquivo, required: true %>
+  <button type="submit">Importar</button>
+<% end %>

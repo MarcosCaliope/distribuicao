@@ -14,6 +14,12 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
 
+  namespace :operacoes do
+    resources :remessas, only: [ :new, :create ]
+    resource :distribuicao, only: [ :new, :create ]
+    resource :exportacao, only: [ :new, :create ]
+  end
+
   namespace :relatorios do
     get "titulos/eventuais", to: "titulos#eventuais"
     get "titulos/por_apresentante", to: "titulos#por_apresentante"
