@@ -105,21 +105,125 @@ hardcoded to `"FORTALEZA"` in the legacy VB6 (`frmImpTitulos.frm`); here it's
 `config.x.remessa.cidade_sede`, overridable via the `REMESSA_CIDADE_SEDE` env var, so the app
 isn't locked to one client's comarca.
 
+## Distribuição de títulos (`app/services/distribuicao/`)
+
+Etapa 3. `Processador#processar` (replicating `frmDistribuicaoNew.cmdProcessar_Click`) is the
+entry point: `CriadorDia` first guarantees a `VagaDistribuicao` (cartório x faixa de custas) row
+exists for the day, inheriting `livre` from the most recent prior row for that same pair (or
+`false` if there's never been one); then each `Titulo.pendentes_distribuicao` is distributed in
+its **own** transaction — a título with no matching `FaixaCusta` is collected as a `Falha`
+struct rather than aborting the batch, the same "flag, don't abort" precedent as
+`RemessaImportacao`. `SorteioCartorio` and `RodizioOficio` are two independent draws: the former
+locks the faixa's vagas `FOR UPDATE` and samples a free one (resetting the whole faixa to
+`livre` when none remain) — this `FOR UPDATE` is a deliberate fix of the legacy's unlocked
+`UPDATE ... WHERE blivre=true` race, see `docs/ANALISE_MIGRACAO.md`; the latter just alternates
+between the 2 registered `OficioDistribuidor`s, unrelated to the cartório sorteio. `Desfazedor`
+(undo) only clears the título's own distribution/export FKs — it does **not** return the vaga or
+ofício to `livre`, matching legacy behavior where undoing affects only the título, not the day's
+rodízio.
+
+## Exportação de manifestos e retornos (`app/services/exportacao/`)
+
+Etapa 4. Two writers share `FormatoFixo` (padding helpers mirroring legacy `TrataString`/
+`TrataMoeda`/`TrataDuplo`): `GeradorManifesto` writes the internal per-ofício-distribuidor
+manifest (pure detail lines, no header/trailer — confirmed the legacy form declares those
+variables but never uses them) and deliberately widens two fixed-width fields versus the legacy
+layout (tipo de documento 4 bytes not 3, tipo de título 3 not 2) since it's a new,
+Rails-only-consumed format and truncating back to the old width would cut real data.
+`GeradorRetorno` writes the per-cartório+apresentante bank-return file by **reconstructing** the
+fixed-width line from `Titulo` columns (Rails doesn't keep the legacy's raw per-título line) —
+its byte offsets are kept in manual sync with `remessa_importacao/{header,detalhe,trailer}.rb`
+and must be re-checked there on any import-side offset change. Both attach the generated file to
+`ManifestoDistribuidor`/`RetornoExportado` via Active Storage and stamp that FK back onto every
+included `Titulo` (which is what `Desfazedor`, above, has to clear). `GeradorRetorno` also
+enqueues `Exportacao::EnvioRetornoJob` to email the file — new behavior with no legacy
+equivalent (legacy sending was a manual Outlook/COM automation triggered by a button).
+
+## Relatórios (`app/services/relatorios/`, `app/controllers/relatorios/`)
+
+Etapa 5. Every report is a plain service (one per legacy `frmRel*`/`frmCadApresentantes` form)
+returning a `Relatorios::Dataset` (title/subtitle/columns/rows struct) — the single shape both
+the shared HTML view (`app/views/relatorios/tabela.html.erb`) and `Relatorios::TabelaPdf`
+(Prawn) render, replacing what was a copy-pasted staging-table-and-print-button per legacy
+screen. `Relatorios::ApplicationController` is the one place the html/pdf dual response format
+(`renderizar`) and the authorization gate live, so the individual report controllers under
+`app/controllers/relatorios/` stay thin action methods. A few reports are intentionally narrower
+than their legacy counterpart where the missing scope depends on a feature this app doesn't have
+yet (e.g. `TitulosEventuais` filters on manually-registered títulos, which can't exist until a
+manual-entry feature is built) — see each service's own comment and
+`docs/ANALISE_MIGRACAO.md`'s Etapa 5 section before treating an empty result as a bug.
+
+## Autenticação e autorização (Etapa 6)
+
+Session-based (`Usuario`/`Sessao`, `has_secure_password`, signed cookie) — the `Autenticacao`
+controller concern (`app/controllers/concerns/autenticacao.rb`) enforces login on every
+controller that includes it, plus a mandatory password change (`deve_trocar_senha`) for
+legacy-imported users, checked *after* authentication so it can redirect an already-logged-in
+user instead of blocking the login page itself. Authorization is real Pundit policies under
+`app/policies/` (e.g. `RelatorioPolicy#ver?`, gating all of Relatórios above) backed by a plain
+`Perfil`/`Permissao`/`PerfilPermissao`/`PerfilUsuario` RBAC join (`Usuario#tem_permissao?`) — not
+ad-hoc `if` checks in controllers. `Autenticacao::ImportadorUsuariosLegado` imports
+`public.cad_usuario` the same way the Etapa 7 ETL importers below do (raw SQL, idempotent, rake
+task, kept out of `db/seeds.rb`/CI) but never carries over the legacy password (item 15 of
+`docs/ANALISE_MIGRACAO.md` — treated as compromised): every imported user gets a fresh random
+password and is forced to change it on first login.
+
+## ETL de dados legados (`app/services/etl/`, `lib/tasks/etl.rake`)
+
+Etapa 7 of the migration plan. Two independent things, not one "migrate everything" task — see
+`docs/ANALISE_MIGRACAO.md` items 17-18 for why:
+
+1. **Dimension/reference-data import** — `Etl::Importador{Cartorios,OficiosDistribuidores,
+   Bancos,Apresentantes,TiposTitulo,FaixasCusta,Feriados}`, one per legacy `public.*` table,
+   run via `bin/rails etl:importar_dimensoes` (or per-table, e.g. `bin/rails etl:bancos`).
+   Idempotent (`find_or_create_by!`/skip-if-exists on a natural key, usually `codigo_legado`),
+   catches per-row failures (e.g. `TipoTitulo` has real duplicate `abreviatura`s under
+   different legacy codes) without aborting the batch. These are the only source of `Cartorio`/
+   `Banco`/`Apresentante`/`TipoTitulo`/`FaixaCusta`/`Feriado`/`OficioDistribuidor` data — none of
+   it is seeded any other way.
+2. **Historical replay validation** — `Etl::ReconstrutorRemessa` reassembles a historical
+   remessa file byte-for-byte from `public.tblremessas.sregistro` (each detail line already
+   carries its own position at bytes 597-600, no external ordering column needed);
+   `Etl::ValidadorReplayHistorico` runs the reconstructed file through the **real, unmodified**
+   `RemessaImportacao::Importador` inside a transaction that always rolls back, and diffs the
+   computed `irregularidade` against the legacy-recorded `icodirreg` for the same line. Run via
+   `bin/rails "etl:validar_replay_historico[data_inicio,data_fim]"`. **This never persists a
+   título** — `public.cad_titulos`/`cad_devedor` are empty in the legacy DB (títulos get purged
+   once resolved), so there is no live "pending" legacy data to backfill; this is a confidence
+   check on the ported business rules, not a migration.
+
+Same structural precedent as `Autenticacao::ImportadorUsuariosLegado` (Etapa 6): raw SQL against
+`public.<table>` (the `distribuidor` schema's `search_path` won't find them otherwise), kept
+**out of `db/seeds.rb` and out of CI** — `.github/workflows/ci.yml` runs against a blank
+`postgres` service container with no legacy `public` schema data at all, so anything reading
+`public.*` would break CI if it ran automatically. Tests for anything touching a `public.*`
+table create that table with raw SQL in `setup` and drop it in `teardown` (see
+`test/services/etl/*_test.rb` or the Etapa 6 precedent) — never assume a legacy table exists in
+the test DB by default.
+
+**Be careful running ad-hoc scripts against `public.*` tables in the dev DB** — unlike the test
+DB (where these tables are always fixtures your own `setup`/`teardown` creates and destroys),
+the dev DB has the *real* restored legacy data. A throwaway verification script that
+`CREATE TABLE IF NOT EXISTS`s or `DELETE FROM`s a `public.*` table is a no-op or a fixture
+operation in test, but a real, unscoped mutation in dev — scope every statement narrowly (a
+`WHERE` clause, not a bare table name) if you're touching `public.*` outside the test DB.
+
 ## Model layer
 
-Models under `app/models/` currently hold validations and associations only — no business
-logic beyond `Remessa` and `Titulo` scopes. Business logic (distribution/rotation, export,
-reports) is expected to land in services under `app/services/`, following the
-`RemessaImportacao` pattern (a namespaced module per subsystem), not in models or controllers.
+Models under `app/models/` hold validations, associations, and scopes only (plus the odd
+one-line query method, e.g. `Usuario#tem_permissao?`) — no business logic. Business logic
+(import, distribution/rotation, export, reports, ETL) lives in services under `app/services/`,
+one namespaced module per subsystem (`RemessaImportacao`, `Distribuicao`, `Exportacao`,
+`Relatorios`, `Autenticacao`, `Etl`), not in models or controllers.
 
 In `Titulo`, `protocolo_original` (immutable, legacy `seq_protocolo` value, only populated for
 tracking data lineage during ETL) and `numero_protocolo_distribuido` (derived, computed once at
 distribution time) are deliberately separate columns — the legacy system mutates a single
 field in place for both purposes. Keep them separate in any new code.
 
-No controllers/views/routes exist yet beyond the Rails health check — the app is still
-backend/service-layer only (import pipeline + models). Distribution, export, and reporting
-(Etapas 3–5 of the migration plan) are not implemented.
+Etapas 3–7 of the migration plan (distribution/rotation, export/manifests, reports, auth, and
+legacy-data ETL) are all implemented — see the corresponding sections above and
+`docs/ANALISE_MIGRACAO.md`'s "Plano por etapas" for what each covers. Remaining: Etapa 8 (cutover).
 
 ## Tests
 
