@@ -154,6 +154,23 @@ mas podem colidir numa migração ingênua): `tes_movimento`/`tes_totaldia` (Tes
     ocorrências) — não é possível confirmar que essa tabela pertence de fato ao Distribuidor.
     Decisão tomada com o usuário: importar mesmo assim (nome + login, nunca a senha), com troca
     de senha obrigatória pra todo usuário importado antes de fazer qualquer coisa.
+17. `public.cad_titulos`/`public.cad_devedor` estão **vazios** (0 registros) na cópia restaurada
+    — já confirmado com o usuário na Etapa 1 ("Achado de dados para a Etapa 7"): o legado purga
+    títulos assim que são resolvidos, não existe tabela de histórico/arquivo separada. O único
+    lugar onde dado histórico de título de fato existe é `public.tblremessas` (2.450.219 linhas,
+    `datarem` 2022-01-12 a 2026-01-05) — guarda a linha bruta de largura fixa (`sregistro`,
+    ~600 bytes) de cada registro de remessa já importado, no mesmo layout que
+    `RemessaImportacao::Header`/`Detalhe`/`Trailer` já leem. `situacao`/`icodirreg` nessa tabela
+    se correlacionam exatamente como a saída de `avaliar_criticas` do Rails
+    (`situacao='5' ⟺ icodirreg≠0`, igual a como o Rails seta `tipo_ocorrencia: "5"` sempre que
+    acha uma irregularidade) — são saída da própria lógica de crítica do legado gravada por
+    linha, não dado independente. A Etapa 7 usa isso pra revalidar a lógica de crítica portada
+    contra dado histórico real (ver item 18), não pra popular `titulos` — não haveria sentido em
+    inserir milhões de títulos já resolvidos na tabela operacional viva.
+18. Resolvida na Etapa 7 a ambiguidade que as Etapas 4 e 5 deixaram em aberto:
+    `cad_protesto.ativa_sc_titulos` é a única flag de atividade que `cad_protesto` tem (não há
+    coluna "ativo" separada) — o ETL mapeia `ativa_sc_titulos → Cartorio.ativo` diretamente, por
+    ser o único sinal disponível.
 
 ## Plano por etapas
 
@@ -316,8 +333,18 @@ de `public.cad_usuario` (item 16 acima), separado do `db:seed` automático (a ta
 existe no Postgres limpo que o CI usa). Escopo por cartório fica de fora deliberadamente — sem
 precedente no legado e sem tela de CRUD hoje que precise disso.
 
-**Etapa 7 — Migração de dados + validação em paralelo**: ETL das tabelas legadas, suite de
-comparação campo a campo reimportando remessas históricas nos dois sistemas.
+**Etapa 7 — Migração de dados + validação em paralelo**: duas partes independentes, confirmado
+com o usuário (ver itens 17-18 acima). (a) ETL de dimensão/referência de verdade —
+`Cartorio`/`OficioDistribuidor`/`Banco`/`Apresentante`/`TipoTitulo`/`FaixaCusta`/`Feriado`, hoje
+vazios ou sem seed real — segue o mesmo padrão da Etapa 6
+(`Autenticacao::ImportadorUsuariosLegado`): SQL cru contra `public.*`, serviço idempotente,
+task rake fininha, fora de `db/seeds.rb`/CI. (b) Suite de validação — **não** um backfill de
+títulos (não haveria "título pendente" legado pra migrar, `cad_titulos` está vazio): reconstrói
+arquivos de remessa históricos a partir de `tblremessas.sregistro`, roda pelo
+`RemessaImportacao::Importador` de verdade dentro de uma transação sempre desfeita
+(`ActiveRecord::Rollback`), e compara a irregularidade/ocorrência computada contra
+`icodirreg`/`situacao` gravados pelo legado pra aquela mesma linha — valida a lógica de crítica
+portada contra dado histórico real em escala, sem gravar nada.
 
 **Etapa 8 — Corte**: strangler fig tela por tela, desligando a tela equivalente no VB6
 conforme cada parte entra em produção no Rails.
