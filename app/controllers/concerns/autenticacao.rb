@@ -49,10 +49,8 @@ module Autenticacao
       redirect_to new_sessao_path
     end
 
-    # Não existe rota raiz nesse app ainda (nenhuma tela de "início" definida) — cai pro
-    # primeiro relatório como destino padrão até isso existir.
     def url_apos_autenticacao
-      session.delete(:return_to_after_authenticating) || relatorios_titulos_eventuais_path
+      session.delete(:return_to_after_authenticating) || relatorios_menu_path
     end
 
     def iniciar_sessao_para(usuario)

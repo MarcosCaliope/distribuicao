@@ -11,8 +11,7 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  root "relatorios/menu#index"
 
   namespace :operacoes do
     resources :remessas, only: [ :new, :create ]
@@ -21,6 +20,7 @@ Rails.application.routes.draw do
   end
 
   namespace :relatorios do
+    get "/", to: "menu#index", as: :menu
     get "titulos/eventuais", to: "titulos#eventuais"
     get "titulos/por_apresentante", to: "titulos#por_apresentante"
     get "titulos/por_devedor", to: "titulos#por_devedor"

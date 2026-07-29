@@ -389,13 +389,22 @@ o código):
 
 Sequenciamento proposto:
 
-- **Fase 0 — Construir os pontos de entrada que faltam.** Um controller (ou ação
-  administrativa) pra upload de remessa chamando `RemessaImportacao::Importador`, um gatilho
-  pra `Distribuicao::Processador#processar` (botão ou job agendado), e um pra
-  `Exportacao::Gerador*`. Nenhuma tela legada desliga ainda — isso só torna o Rails operável.
-- **Fase 1 — Relatórios (já pronto).** Menor risco: só leitura, os dois sistemas podem rodar em
-  paralelo indefinidamente, rollback trivial (apontar o usuário de volta pra tela VB6). Cortar
-  primeiro.
+- **Fase 0 — Construir os pontos de entrada que faltam (concluída).** Namespace
+  `Operacoes::` (`app/controllers/operacoes/`): upload de remessa chamando
+  `RemessaImportacao::Importador`, gatilho síncrono pra `Distribuicao::Processador#processar` e
+  pra `Exportacao::Gerador*`, gated por uma única permissão nova (`operar_distribuicao` via
+  `OperacaoPolicy`). Nenhuma tela legada desligou — isso só tornou o Rails operável.
+- **Fase 1 — Relatórios.** Menor risco: só leitura, os dois sistemas podem rodar em paralelo
+  indefinidamente, rollback trivial (apontar o usuário de volta pra tela VB6). Lado Rails
+  pronto pra corte: além das 4 telas/7 modos da Etapa 5, foi fechada uma lacuna que o próprio
+  código já sinalizava (comentário histórico em `Autenticacao#url_apos_autenticacao`) — não
+  existia rota raiz nem menu, só URLs diretas sem nenhum link de navegação entre elas.
+  Adicionado `Relatorios::MenuController` (rota raiz `/` e `/relatorios`, ambas atrás de login)
+  listando os 7 modos, e o pós-login (`url_apos_autenticacao`) e a troca de senha
+  (`SenhasController`) agora caem nele por padrão em vez de cair direto no primeiro relatório.
+  **Ainda pendente, fora do escopo deste repositório**: desligar de fato as 4 telas VB6
+  equivalentes (`frmRelTitulos.frm`, `frmRelArrecadacaoNew2.frm`, `frmRelRankingDevedor.frm`,
+  `frmCadApresentantes.frm`) é uma ação operacional que só o usuário pode confirmar/executar.
 - **Fase 2 — Autenticação.** Não é substituição (ver tabela acima) — só ativar a exigência
   assim que os operadores de verdade tiverem conta (`usuarios:importar_legado` já cobre a carga
   inicial única).

@@ -8,7 +8,7 @@ class SessoesControllerTest < ActionDispatch::IntegrationTest
   test "login com credenciais corretas cria sessão e redireciona" do
     post sessao_url, params: { login: @usuario.login, password: SENHA_PADRAO_TESTE }
 
-    assert_redirected_to relatorios_titulos_eventuais_path
+    assert_redirected_to relatorios_menu_path
     assert_equal 1, @usuario.sessoes.count
   end
 

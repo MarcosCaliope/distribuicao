@@ -26,7 +26,7 @@ class SenhasControllerTest < ActionDispatch::IntegrationTest
       senha_atual: SENHA_PADRAO_TESTE, nova_senha: "nova-senha-456", nova_senha_confirmacao: "nova-senha-456"
     }
 
-    assert_redirected_to relatorios_titulos_eventuais_path
+    assert_redirected_to relatorios_menu_path
     assert_not @usuario.reload.deve_trocar_senha
     assert @usuario.authenticate("nova-senha-456")
   end
