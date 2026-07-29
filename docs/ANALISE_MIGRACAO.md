@@ -431,11 +431,17 @@ Sequenciamento proposto:
   arbitrário, sem persistir) — usos diferentes, não foi unificada com o job. **Ainda pendente**:
   a janela de observação em si (rodar por tempo suficiente acumulando dias sem divergência antes
   de desligar `frmImpTitulos`) é decisão do usuário, não algo que se conclui escrevendo código.
-- **Fase 4 — Distribuição + Exportação, juntas, corte direto por dia.** Não dá pra rodar em
-  modo sombra contra o mesmo dado ao vivo — os dois sistemas competiriam pelas mesmas vagas de
-  distribuição e sequência de protocolo. Precisa ser um corte limpo num dia escolhido
-  (idealmente de baixo volume), com `Distribuicao::Desfazedor` como caminho de rollback
-  documentado se a distribuição daquele dia precisar ser desfeita. Exportação corta junto ou
-  logo em seguida, já que lê a atribuição de cartório/ofício que a distribuição acabou de
-  gravar.
+- **Fase 4 — Distribuição + Exportação, juntas, corte direto por dia (ferramentas prontas;
+  escolha do dia pendente).** Não dá pra rodar em modo sombra contra o mesmo dado ao vivo — os
+  dois sistemas competiriam pelas mesmas vagas de distribuição e sequência de protocolo (e,
+  diferente da crítica de import, o sorteio de cartório não tem um valor determinístico esperado
+  pra comparar num replay). Precisa ser um corte limpo num dia escolhido (idealmente de baixo
+  volume). As telas operacionais da Fase 0 (`/operacoes/distribuicao`, `/operacoes/exportacao`)
+  já cobrem o disparo de ida; faltava o caminho de volta — `Distribuicao::Desfazedor` só existia
+  via console, sem ponto de entrada nenhum, mesma lacuna que a Fase 0 fechou pros outros
+  serviços. Adicionado `DELETE /operacoes/distribuicao` (ação `destroy` em
+  `Operacoes::DistribuicoesController`, mesmo formulário/tela de sempre) chamando
+  `Distribuicao::Desfazedor` de verdade — quem estiver de plantão no dia do corte não precisa
+  de acesso a `rails console` pra reverter. **Ainda pendente**: escolher o dia de baixo volume e
+  executar o corte é decisão do usuário, não conclui com código.
 - **Fase 5 — Aposentar `frmCorrigeRemessa`** assim que a pergunta aberta 1 acima for resolvida.

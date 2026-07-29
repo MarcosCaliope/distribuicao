@@ -37,5 +37,18 @@ module Operacoes
       assert_match(/concluída sem falhas/, flash[:notice])
       assert @titulo.reload.data_distribuicao.present?
     end
+
+    test "desfaz a distribuição do dia e redireciona com notice" do
+      post operacoes_distribuicao_path, params: { data: Date.current.to_s }
+      assert @titulo.reload.cartorio.present?
+
+      delete operacoes_distribuicao_path, params: { data: Date.current.to_s }
+
+      assert_redirected_to new_operacoes_distribuicao_path
+      assert_match(/desfeita/, flash[:notice])
+      @titulo.reload
+      assert_nil @titulo.cartorio_id
+      assert_nil @titulo.data_distribuicao
+    end
   end
 end

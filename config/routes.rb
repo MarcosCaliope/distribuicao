@@ -15,7 +15,7 @@ Rails.application.routes.draw do
 
   namespace :operacoes do
     resources :remessas, only: [ :new, :create ]
-    resource :distribuicao, only: [ :new, :create ]
+    resource :distribuicao, only: [ :new, :create, :destroy ]
     resource :exportacao, only: [ :new, :create ]
     get "validacoes_sombra", to: "validacoes_sombra#index", as: :validacoes_sombra
   end

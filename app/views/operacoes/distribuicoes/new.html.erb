@@ -8,3 +8,13 @@
   <label>Data <input type="date" name="data" value="<%= Date.current %>"></label>
   <button type="submit">Processar</button>
 <% end %>
+
+<h2>Desfazer</h2>
+<p>
+  Desfazer só limpa cartório/ofício/protocolo dos títulos daquela data — não devolve as vagas de
+  distribuição nem os ofícios distribuidores ao estado "livre" (mesmo comportamento do legado).
+</p>
+<%= form_with url: operacoes_distribuicao_path, method: :delete do %>
+  <label>Data <input type="date" name="data" value="<%= Date.current %>"></label>
+  <button type="submit">Desfazer distribuição do dia</button>
+<% end %>

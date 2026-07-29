@@ -14,6 +14,11 @@ module Operacoes
       end
     end
 
+    def destroy
+      Distribuicao::Desfazedor.new(data_param).desfazer!
+      redirect_to new_operacoes_distribuicao_path, notice: "Distribuição de #{data_param} desfeita."
+    end
+
     private
 
     def data_param
