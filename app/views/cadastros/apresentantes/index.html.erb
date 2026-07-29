@@ -1,0 +1,33 @@
+<%= render "cadastros/flash" %>
+
+<h1>Apresentantes</h1>
+<%= link_to "Novo apresentante", new_cadastros_apresentante_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Nome</th>
+      <th>Convênio</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @apresentantes.each do |apresentante| %>
+      <tr style="<%= "opacity:0.5" unless apresentante.ativo %>">
+        <td><%= apresentante.codigo_legado %></td>
+        <td><%= apresentante.nome %></td>
+        <td><%= apresentante.convenio %></td>
+        <td><%= apresentante.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_apresentante_path(apresentante) %>
+          <% if apresentante.ativo %>
+            <%= button_to "Inativar", cadastros_apresentante_path(apresentante), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este apresentante?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

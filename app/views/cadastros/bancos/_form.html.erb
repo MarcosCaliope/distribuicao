@@ -1,0 +1,17 @@
+<%= render "cadastros/erros", model: banco %>
+
+<%= form_with model: banco, url: banco.persisted? ? cadastros_banco_path(banco) : cadastros_bancos_path do |form| %>
+  <label>Código legado<br><%= form.text_field :codigo_legado, required: true %></label><br>
+  <label>Código alfa<br><%= form.text_field :codigo_alfa %></label><br>
+  <label>Nome<br><%= form.text_field :nome, required: true %></label><br>
+  <label>Apresentante<br>
+    <%= form.collection_select :apresentante_id, @apresentantes, :id, :nome, include_blank: true %>
+  </label><br>
+  <label>Valor da custa<br><%= form.text_field :valor_custa %></label><br>
+  <label>Sequência de confirmação<br><%= form.number_field :sequencia_confirmacao %></label><br>
+  <label>E-mail<br><%= form.email_field :email %></label><br>
+  <label><%= form.check_box :processa %> Processa</label><br>
+  <label><%= form.check_box :gera_remessa_cartorio %> Gera remessa por cartório</label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>

@@ -30,4 +30,12 @@ Rails.application.routes.draw do
     get "ranking_devedores", to: "ranking_devedores#index"
     get "apresentantes", to: "apresentantes#index"
   end
+
+  namespace :cadastros do
+    resources :cartorios, except: :show
+    resources :bancos, except: :show
+    resources :apresentantes, except: :show
+    resources :tipo_titulos, except: :show
+    resources :faixa_custas, except: :show
+  end
 end

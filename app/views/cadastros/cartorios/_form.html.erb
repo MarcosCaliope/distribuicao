@@ -1,0 +1,12 @@
+<%= render "cadastros/erros", model: cartorio %>
+
+<%= form_with model: cartorio, url: cartorio.persisted? ? cadastros_cartorio_path(cartorio) : cadastros_cartorios_path do |form| %>
+  <label>Código legado<br><%= form.text_field :codigo_legado %></label><br>
+  <label>Nome<br><%= form.text_field :nome, required: true %></label><br>
+  <label>Ofício<br><%= form.text_field :oficial %></label><br>
+  <label>Telefone<br><%= form.text_field :telefone %></label><br>
+  <label>E-mail<br><%= form.email_field :email %></label><br>
+  <label>E-mail (cópia)<br><%= form.email_field :email_copia %></label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>

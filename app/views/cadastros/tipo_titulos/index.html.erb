@@ -1,0 +1,33 @@
+<%= render "cadastros/flash" %>
+
+<h1>Tipos de título</h1>
+<%= link_to "Novo tipo de título", new_cadastros_tipo_titulo_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Descrição</th>
+      <th>Abreviatura</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tipo_titulos.each do |tipo_titulo| %>
+      <tr style="<%= "opacity:0.5" unless tipo_titulo.ativo %>">
+        <td><%= tipo_titulo.codigo_legado %></td>
+        <td><%= tipo_titulo.descricao %></td>
+        <td><%= tipo_titulo.abreviatura %></td>
+        <td><%= tipo_titulo.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_tipo_titulo_path(tipo_titulo) %>
+          <% if tipo_titulo.ativo %>
+            <%= button_to "Inativar", cadastros_tipo_titulo_path(tipo_titulo), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este tipo de título?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,33 @@
+<%= render "cadastros/flash" %>
+
+<h1>Bancos</h1>
+<%= link_to "Novo banco", new_cadastros_banco_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Nome</th>
+      <th>Apresentante</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @bancos.each do |banco| %>
+      <tr style="<%= "opacity:0.5" unless banco.ativo %>">
+        <td><%= banco.codigo_legado %></td>
+        <td><%= banco.nome %></td>
+        <td><%= banco.apresentante&.nome %></td>
+        <td><%= banco.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_banco_path(banco) %>
+          <% if banco.ativo %>
+            <%= button_to "Inativar", cadastros_banco_path(banco), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este banco?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

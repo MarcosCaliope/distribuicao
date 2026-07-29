@@ -1,0 +1,13 @@
+<%= render "cadastros/erros", model: faixa_custa %>
+
+<%= form_with model: faixa_custa, url: faixa_custa.persisted? ? cadastros_faixa_custa_path(faixa_custa) : cadastros_faixa_custas_path do |form| %>
+  <label>Sequencial<br><%= form.number_field :sequencial, required: true %></label><br>
+  <label>Tipo<br><%= form.text_field :tipo, required: true %></label><br>
+  <label>Valor<br><%= form.text_field :valor %></label><br>
+  <label>Número de cartórios<br><%= form.number_field :numero_cartorios %></label><br>
+  <label>Quantidade/dia<br><%= form.text_field :quantidade_dia %></label><br>
+  <label>Limite inferior<br><%= form.text_field :limite_inferior, required: true %></label><br>
+  <label>Limite superior<br><%= form.text_field :limite_superior, required: true %></label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>

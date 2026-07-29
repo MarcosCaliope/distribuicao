@@ -376,11 +376,17 @@ o código):
 1. ~~**`frmCorrigeRemessa`** ainda é necessária?~~ **Resolvida (2026-07-29)**: confirmado com o
    usuário que os padrões de byte ruim que ela corrigia não ocorrem mais nos arquivos de remessa
    reais de hoje — aposentar sem portar nada, ver Fase 5.
-2. **CRUD das tabelas de dimensão** (cartórios, bancos, apresentantes, tipos de título, faixas
-   de custa) — hoje só existem via os importadores ETL da Etapa 7 (só criação inicial, sem
-   edição). Se o legado tem telas de cadastro separadas pra essas tabelas ainda em uso ativo
-   (ex.: cadastrar um cartório novo), o Rails precisa de CRUD equivalente antes do corte, ou
-   essas telas ficam no VB6 apontando pro mesmo banco indefinidamente. **Pendente.**
+2. ~~**CRUD das tabelas de dimensão** (cartórios, bancos, apresentantes, tipos de título, faixas
+   de custa)~~ **Resolvida (2026-07-29)**: usuário decidiu construir CRUD Rails completo pras 5
+   tabelas independentemente de qual telas legadas ainda estão em uso — namespace
+   `Cadastros::` (`app/controllers/cadastros/`), gated por uma permissão nova
+   `gerenciar_cadastros` restrita ao perfil `administrador` (primeira vez que os dois perfis se
+   diferenciam de fato). Exclusão é sempre soft-delete via um campo `ativo`/concern
+   `Inativavel` (`app/models/concerns/inativavel.rb`) — nunca `DELETE` físico, já que
+   `titulos`/`remessas`/`retorno_exportados`/`vaga_distribuicoes` têm FK (várias `NOT NULL`)
+   pra essas 5 tabelas. De quebra, corrigidas validações de unicidade/presença que já existiam
+   como constraint no banco mas não no model (`Cartorio`/`Apresentante`/`Banco`/`TipoTitulo`
+   `codigo_legado`/`codigo_alfa`), invisíveis até existir UI de escrita pra expô-las.
 3. **Testamentos/Escrituras/SIAC** — confirmado fora de escopo desta migração (Fase 0), mas
    dividem a mesma instância Postgres; vale confirmação explícita de que o corte aqui não
    afeta essas telas. **Pendente.**

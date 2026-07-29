@@ -1,0 +1,35 @@
+<%= render "cadastros/flash" %>
+
+<h1>Faixas de custa</h1>
+<%= link_to "Nova faixa de custa", new_cadastros_faixa_custa_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sequencial</th>
+      <th>Tipo</th>
+      <th>Limite inferior</th>
+      <th>Limite superior</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @faixa_custas.each do |faixa_custa| %>
+      <tr style="<%= "opacity:0.5" unless faixa_custa.ativo %>">
+        <td><%= faixa_custa.sequencial %></td>
+        <td><%= faixa_custa.tipo %></td>
+        <td><%= faixa_custa.limite_inferior %></td>
+        <td><%= faixa_custa.limite_superior %></td>
+        <td><%= faixa_custa.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_faixa_custa_path(faixa_custa) %>
+          <% if faixa_custa.ativo %>
+            <%= button_to "Inativar", cadastros_faixa_custa_path(faixa_custa), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar esta faixa de custa?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

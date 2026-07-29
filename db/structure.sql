@@ -135,7 +135,8 @@ CREATE TABLE distribuidor.apresentantes (
     convenio character varying(1),
     custa_antecipada boolean DEFAULT false NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    ativo boolean DEFAULT true NOT NULL
 );
 
 
@@ -186,7 +187,8 @@ CREATE TABLE distribuidor.bancos (
     sequencia_confirmacao integer,
     email character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    ativo boolean DEFAULT true NOT NULL
 );
 
 
@@ -332,7 +334,8 @@ CREATE TABLE distribuidor.faixa_custas (
     limite_inferior numeric(12,2) NOT NULL,
     limite_superior numeric(12,2) NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    ativo boolean DEFAULT true NOT NULL
 );
 
 
@@ -738,7 +741,8 @@ CREATE TABLE distribuidor.tipo_titulos (
     descricao character varying NOT NULL,
     abreviatura character varying(3) NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    ativo boolean DEFAULT true NOT NULL
 );
 
 
@@ -1932,6 +1936,10 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260729190337'),
+('20260729190336'),
+('20260729190334'),
+('20260729190325'),
 ('20260729134314'),
 ('20260728170140'),
 ('20260728170139'),

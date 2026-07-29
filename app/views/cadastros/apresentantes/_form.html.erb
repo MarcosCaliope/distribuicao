@@ -1,0 +1,17 @@
+<%= render "cadastros/erros", model: apresentante %>
+
+<%= form_with model: apresentante, url: apresentante.persisted? ? cadastros_apresentante_path(apresentante) : cadastros_apresentantes_path do |form| %>
+  <label>Código legado<br><%= form.text_field :codigo_legado %></label><br>
+  <label>Nome<br><%= form.text_field :nome, required: true %></label><br>
+  <label>Endereço<br><%= form.text_field :endereco %></label><br>
+  <label>Telefone<br><%= form.text_field :telefone %></label><br>
+  <label>Contato<br><%= form.text_field :contato %></label><br>
+  <label>Agência<br><%= form.text_field :agencia %></label><br>
+  <label>Tipo<br><%= form.text_field :tipo %></label><br>
+  <label>Convênio<br>
+    <%= form.select :convenio, options_for_select(Apresentante::CONVENIOS.map { |c| [ c, c ] }, apresentante.convenio), include_blank: true %>
+  </label><br>
+  <label><%= form.check_box :custa_antecipada %> Custa antecipada</label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>

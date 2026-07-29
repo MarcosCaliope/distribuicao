@@ -89,13 +89,18 @@ IRREGULARIDADES.each do |codigo, descricao|
   Irregularidade.find_or_create_by!(codigo: codigo) { |i| i.descricao = descricao }
 end
 
-# Permissões e perfis (Etapa 6). "administrador" e "operador" ainda não se diferenciam na
-# prática; a distinção ganha sentido quando telas de CRUD de verdade existirem.
-PERMISSOES = %w[ver_relatorios operar_distribuicao].freeze
-PERFIS = %w[administrador operador].freeze
+# Permissões e perfis (Etapa 6/8). "administrador" acumula tudo que "operador" tem mais
+# gerenciar_cadastros (CRUD das tabelas de dimensão) — primeira vez que os dois perfis se
+# diferenciam de fato.
+PERMISSOES = %w[ver_relatorios operar_distribuicao gerenciar_cadastros].freeze
 
-permissoes = PERMISSOES.map { |chave| Permissao.find_or_create_by!(chave: chave) }
-PERFIS.each do |nome|
+PERFIS_PERMISSOES = {
+  "operador" => %w[ver_relatorios operar_distribuicao],
+  "administrador" => %w[ver_relatorios operar_distribuicao gerenciar_cadastros]
+}.freeze
+
+permissoes_por_chave = PERMISSOES.index_with { |chave| Permissao.find_or_create_by!(chave: chave) }
+PERFIS_PERMISSOES.each do |nome, chaves|
   perfil = Perfil.find_or_create_by!(nome: nome)
-  perfil.permissoes = permissoes
+  perfil.permissoes = chaves.map { |chave| permissoes_por_chave.fetch(chave) }
 end

@@ -1,7 +1,10 @@
 class Cartorio < ApplicationRecord
+  include Inativavel
+
   has_many :titulos
 
-  validates :nome, presence: true
+  normalizes :codigo_legado, with: ->(codigo_legado) { codigo_legado.presence }
 
-  scope :ativos, -> { where(ativo: true) }
+  validates :nome, presence: true
+  validates :codigo_legado, uniqueness: true, allow_nil: true
 end

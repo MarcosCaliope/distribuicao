@@ -1,0 +1,31 @@
+<%= render "cadastros/flash" %>
+
+<h1>Cartórios</h1>
+<%= link_to "Novo cartório", new_cadastros_cartorio_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Nome</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @cartorios.each do |cartorio| %>
+      <tr style="<%= "opacity:0.5" unless cartorio.ativo %>">
+        <td><%= cartorio.codigo_legado %></td>
+        <td><%= cartorio.nome %></td>
+        <td><%= cartorio.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_cartorio_path(cartorio) %>
+          <% if cartorio.ativo %>
+            <%= button_to "Inativar", cadastros_cartorio_path(cartorio), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este cartório?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

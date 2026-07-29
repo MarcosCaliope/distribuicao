@@ -1,0 +1,9 @@
+<%= render "cadastros/erros", model: tipo_titulo %>
+
+<%= form_with model: tipo_titulo, url: tipo_titulo.persisted? ? cadastros_tipo_titulo_path(tipo_titulo) : cadastros_tipo_titulos_path do |form| %>
+  <label>Código legado<br><%= form.text_field :codigo_legado %></label><br>
+  <label>Descrição<br><%= form.text_field :descricao, required: true %></label><br>
+  <label>Abreviatura<br><%= form.text_field :abreviatura, required: true %></label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>
