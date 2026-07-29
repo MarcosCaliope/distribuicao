@@ -405,9 +405,18 @@ Sequenciamento proposto:
   **Ainda pendente, fora do escopo deste repositório**: desligar de fato as 4 telas VB6
   equivalentes (`frmRelTitulos.frm`, `frmRelArrecadacaoNew2.frm`, `frmRelRankingDevedor.frm`,
   `frmCadApresentantes.frm`) é uma ação operacional que só o usuário pode confirmar/executar.
-- **Fase 2 — Autenticação.** Não é substituição (ver tabela acima) — só ativar a exigência
-  assim que os operadores de verdade tiverem conta (`usuarios:importar_legado` já cobre a carga
-  inicial única).
+- **Fase 2 — Autenticação (sem lacuna de código; ação manual pendente).** Não é substituição
+  (ver tabela acima) — a exigência de login (`Autenticacao#exigir_autenticacao`) já está ativa
+  incondicionalmente desde a Etapa 6, não existe nada a "ligar" no código. O único passo
+  pendente é rodar `bin/rails usuarios:importar_legado` **uma vez**, manualmente, contra o
+  banco `central` de verdade — deliberadamente não automatizado (fora de `db/seeds.rb`/CI, ver
+  seção da Etapa 7) e deliberadamente não disparado por um agente/sessão de IA: a saída da task
+  imprime login+senha temporária em texto puro de pessoas reais
+  (`Autenticacao::ImportadorUsuariosLegado#importar!`), então quem roda precisa ser alguém com
+  acesso de confiança ao banco de produção e a um terminal que não vire log/transcript
+  compartilhado. Sem fluxo de "esqueci minha senha" (ver comentário em
+  `SenhasController` — sem SMTP configurado ainda e usuários importados não têm e-mail
+  confirmado); se uma senha temporária se perder, é reset manual via console por ora.
 - **Fase 3 — Importação, em modo sombra primeiro.** Ponto de entrada de maior risco (dado
   ligado a dinheiro). Não cortar direto: rodar o import Rails em paralelo com o VB6 por uma
   janela, comparando resultado do mesmo jeito que `Etl::ValidadorReplayHistorico` já valida
