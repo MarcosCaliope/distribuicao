@@ -242,6 +242,30 @@ pluralize wrong under English rules (`exportacaos`, not `exportacoes`) — see t
 explicit `get ..., as: :validacoes_sombra` instead of `resources`, matching how `relatorios`
 routes already do plain `get` for simple index-style pages.
 
+## Cadastros administrativos das tabelas de dimensão (Etapa 8, `app/controllers/cadastros/`)
+
+Resolves pergunta aberta 2 of `docs/ANALISE_MIGRACAO.md`: `Cartorio`/`Banco`/`Apresentante`/
+`TipoTitulo`/`FaixaCusta` had no write path at all before this — the Etapa 7 ETL importers
+(above) are read-only and one-time. `Cadastros::` (one controller per table, a shared
+`Cadastros::ApplicationController` gating every action on `CadastroPolicy#gerenciar?`) is plain
+Rails CRUD, but two things are load-bearing, not incidental:
+
+- **Never a physical `DELETE`.** `titulos`/`remessas`/`retorno_exportados`/`vaga_distribuicoes`
+  hold FKs (several `NOT NULL`) into these 5 tables, so `destroy` actions call `inativar!` from
+  the `Inativavel` concern (`app/models/concerns/inativavel.rb`, `ativo` column + `ativos`
+  scope) instead. Any new dimension-table CRUD should follow the same pattern rather than
+  reaching for `destroy`.
+- **`gerenciar_cadastros` is its own permission**, restricted to the `administrador` perfil —
+  the first place `administrador` and `operador` actually diverge (everything through Etapa 8's
+  `Operacoes::` controllers used one shared `operar_distribuicao` permission). Don't fold this
+  back into `operar_distribuicao`.
+
+Building the write path also surfaced uniqueness/presence validations
+(`codigo_legado`/`codigo_alfa` on `Cartorio`/`Apresentante`/`Banco`/`TipoTitulo`) that already
+existed as DB constraints but not on the models — they were invisible until there was a form
+that could violate them. Add the same pairing (DB constraint + model validation) for any new
+column on these tables rather than relying on the constraint alone to surface as a 500.
+
 ## Model layer
 
 Models under `app/models/` hold validations, associations, and scopes only (plus the odd
@@ -258,10 +282,12 @@ field in place for both purposes. Keep them separate in any new code.
 Etapas 3–7 of the migration plan (distribution/rotation, export/manifests, reports, auth, and
 legacy-data ETL) are all implemented — see the corresponding sections above and
 `docs/ANALISE_MIGRACAO.md`'s "Plano por etapas" for what each covers. Etapa 8 (cutover)'s code
-side is also done (see Operações section above) — what's left across all its phases is
-operational/business decisions only the user can make (running the one-time legacy user import
-against real data, how long to run shadow validation, which day to cut over
-distribuição/exportação), not code, and is tracked in `docs/ANALISE_MIGRACAO.md` rather than here.
+side is also done (see Operações and Cadastros sections above) — what's left across all its
+phases is operational/business decisions only the user can make (running the one-time legacy
+user import against real data, how long to run shadow validation, which day to cut over
+distribuição/exportação, confirming Testamentos/Escrituras/SIAC are unaffected, sign-off on
+automatic email return sending), not code, and is tracked in `docs/ANALISE_MIGRACAO.md` rather
+than here.
 
 ## Tests
 
