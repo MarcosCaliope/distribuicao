@@ -387,6 +387,18 @@ o código):
    pra essas 5 tabelas. De quebra, corrigidas validações de unicidade/presença que já existiam
    como constraint no banco mas não no model (`Cartorio`/`Apresentante`/`Banco`/`TipoTitulo`
    `codigo_legado`/`codigo_alfa`), invisíveis até existir UI de escrita pra expô-las.
+   Posteriormente (2026-08-06) o mesmo namespace ganhou uma sexta tela,
+   `Cadastros::UsuariosController`, pra fechar uma lacuna equivalente na Etapa 6:
+   `Usuario`/`Perfil` também não tinham UI nenhuma, só `bin/rails console` ou a task
+   `usuarios:importar_legado` — sem forma de criar usuário ou recuperar uma senha temporária
+   perdida sem acesso ao console. Mesma permissão `gerenciar_cadastros`, mesmo `destroy` soft-
+   delete via `Inativavel` das outras 5 telas; `create`/`resetar_senha` nunca aceitam senha
+   digitada pelo administrador — sempre geram uma senha aleatória e forçam `deve_trocar_senha`,
+   mostrada uma única vez via flash, mesmo precedente do `Autenticacao::ImportadorUsuariosLegado`.
+   Diferente das outras 5, também ganhou uma ação `excluir` de exclusão física de verdade (a
+   pedido do usuário) — segura aqui porque `Usuario` só tem `sessoes`/`perfil_usuarios` como FK
+   dependente, ambas já `dependent: :destroy`, sem o problema de FK `NOT NULL` órfã que bloqueia
+   `DELETE` físico nas outras 5 tabelas. Ver seção "Cadastros administrativos" em `CLAUDE.md`.
 3. **Testamentos/Escrituras/SIAC** — confirmado fora de escopo desta migração (Fase 0), mas
    dividem a mesma instância Postgres; vale confirmação explícita de que o corte aqui não
    afeta essas telas. **Pendente.**
@@ -424,7 +436,9 @@ Sequenciamento proposto:
   acesso de confiança ao banco de produção e a um terminal que não vire log/transcript
   compartilhado. Sem fluxo de "esqueci minha senha" (ver comentário em
   `SenhasController` — sem SMTP configurado ainda e usuários importados não têm e-mail
-  confirmado); se uma senha temporária se perder, é reset manual via console por ora.
+  confirmado); se uma senha temporária se perder, um administrador pode gerar outra pela tela
+  `/cadastros/usuarios` ("Redefinir senha", ver pergunta aberta 2 acima) — deixou de exigir
+  acesso a `rails console`.
 - **Fase 3 — Importação, em modo sombra primeiro (automação construída, janela de observação
   pendente).** Ponto de entrada de maior risco (dado ligado a dinheiro). Não cortar direto: rodar
   o import Rails em paralelo com o VB6 por uma janela, comparando resultado do mesmo jeito que

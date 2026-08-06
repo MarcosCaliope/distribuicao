@@ -273,7 +273,13 @@ temporary password without console access. It reuses `gerenciar_cadastros` rathe
 permission (no other tier exists to justify one) and never accepts a password param from the
 form — `create`/`resetar_senha` always generate a random one server-side and force
 `deve_trocar_senha`, shown exactly once via flash on redirect, same precedent as
-`Autenticacao::ImportadorUsuariosLegado`.
+`Autenticacao::ImportadorUsuariosLegado`. It's also the one place in `Cadastros::` that offers a
+real hard delete: `destroy` still does the soft-delete `inativar!` (same as the other 5 tables),
+but a separate `excluir` action calls `Usuario#destroy` for good. That's safe here specifically
+because `Usuario` has no `NOT NULL` FK dependents outside `sessoes`/`perfil_usuarios`, both
+already `dependent: :destroy` — none of the reasoning that forces soft-delete on
+`Cartorio`/`Banco`/`Apresentante`/`TipoTitulo`/`FaixaCusta` applies. Don't add a hard-delete path
+to those 5 without re-checking their FKs first.
 
 ## Model layer
 

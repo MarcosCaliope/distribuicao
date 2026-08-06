@@ -28,6 +28,8 @@
             <%= button_to "Inativar", cadastros_usuario_path(usuario), method: :delete,
                   form: { data: { turbo_confirm: "Inativar este usuário?" } } %>
           <% end %>
+          <%= button_to "Excluir", excluir_cadastros_usuario_path(usuario), method: :delete,
+                form: { data: { turbo_confirm: "Excluir #{usuario.login} definitivamente? Essa ação não pode ser desfeita." } } %>
         </td>
       </tr>
     <% end %>

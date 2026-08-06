@@ -38,7 +38,10 @@ Rails.application.routes.draw do
     resources :tipo_titulos, except: :show
     resources :faixa_custas, except: :show
     resources :usuarios, except: :show do
-      member { post :resetar_senha }
+      member do
+        post :resetar_senha
+        delete :excluir
+      end
     end
   end
 end

@@ -69,6 +69,16 @@ module Cadastros
       assert_not @usuario.reload.ativo
     end
 
+    test "excluir apaga a linha de verdade" do
+      sign_in_as_administrador
+
+      assert_difference("Usuario.count", -1) do
+        delete excluir_cadastros_usuario_path(@usuario)
+      end
+      assert_redirected_to cadastros_usuarios_path
+      assert_not Usuario.exists?(@usuario.id)
+    end
+
     test "resetar_senha gera nova senha e força troca no próximo login" do
       sign_in_as_administrador
       @usuario.update!(deve_trocar_senha: false)

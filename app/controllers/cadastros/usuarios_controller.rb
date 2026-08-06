@@ -3,8 +3,14 @@ module Cadastros
   # resetar_senha) e marcada deve_trocar_senha, mesmo padrão do
   # Autenticacao::ImportadorUsuariosLegado. É exibida uma única vez via flash, no redirect;
   # não fica gravada em nenhum lugar recuperável depois disso.
+  #
+  # Diferente das outras 5 telas de Cadastros:: (nunca DELETE físico, por causa de FK NOT NULL
+  # em titulos/remessas/etc.), Usuario não tem esse problema: só perfil_usuarios e sessoes
+  # referenciam usuario_id, e ambas já são dependent: :destroy no model. Por isso existem duas
+  # ações de remoção separadas: `destroy` (inativar!, reversível, mesmo padrão das outras telas)
+  # e `excluir` (DELETE físico de verdade, perde perfis/sessões junto).
   class UsuariosController < ApplicationController
-    before_action :set_usuario, only: [ :edit, :update, :destroy, :resetar_senha ]
+    before_action :set_usuario, only: [ :edit, :update, :destroy, :excluir, :resetar_senha ]
 
     def index
       @usuarios = Usuario.order(:nome).includes(:perfis)
@@ -42,6 +48,12 @@ module Cadastros
     def destroy
       @usuario.inativar!
       redirect_to cadastros_usuarios_path, notice: "Usuário inativado."
+    end
+
+    def excluir
+      login = @usuario.login
+      @usuario.destroy
+      redirect_to cadastros_usuarios_path, notice: "Usuário #{login} excluído."
     end
 
     def resetar_senha
