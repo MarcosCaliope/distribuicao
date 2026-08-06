@@ -1,0 +1,11 @@
+<%= render "cadastros/erros", model: usuario %>
+
+<%= form_with model: usuario, url: usuario.persisted? ? cadastros_usuario_path(usuario) : cadastros_usuarios_path do |form| %>
+  <label>Login<br><%= form.text_field :login, required: true %></label><br>
+  <label>Nome<br><%= form.text_field :nome, required: true %></label><br>
+  <label>Perfis<br>
+    <%= form.collection_check_boxes :perfil_ids, Perfil.order(:nome), :id, :nome %>
+  </label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>

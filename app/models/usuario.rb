@@ -1,4 +1,6 @@
 class Usuario < ApplicationRecord
+  include Inativavel
+
   has_secure_password
   has_many :sessoes, dependent: :destroy
 
@@ -9,8 +11,6 @@ class Usuario < ApplicationRecord
   validates :nome, presence: true
 
   normalizes :login, with: ->(login) { login.strip.downcase }
-
-  scope :ativos, -> { where(ativo: true) }
 
   def tem_permissao?(chave)
     perfis.joins(:permissoes).where(permissoes: { chave: chave }).exists?

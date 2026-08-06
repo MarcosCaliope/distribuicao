@@ -242,7 +242,7 @@ pluralize wrong under English rules (`exportacaos`, not `exportacoes`) — see t
 explicit `get ..., as: :validacoes_sombra` instead of `resources`, matching how `relatorios`
 routes already do plain `get` for simple index-style pages.
 
-## Cadastros administrativos das tabelas de dimensão (Etapa 8, `app/controllers/cadastros/`)
+## Cadastros administrativos (Etapa 8, `app/controllers/cadastros/`)
 
 Resolves pergunta aberta 2 of `docs/ANALISE_MIGRACAO.md`: `Cartorio`/`Banco`/`Apresentante`/
 `TipoTitulo`/`FaixaCusta` had no write path at all before this — the Etapa 7 ETL importers
@@ -265,6 +265,15 @@ Building the write path also surfaced uniqueness/presence validations
 existed as DB constraints but not on the models — they were invisible until there was a form
 that could violate them. Add the same pairing (DB constraint + model validation) for any new
 column on these tables rather than relying on the constraint alone to surface as a 500.
+
+`Cadastros::UsuariosController` was added later under the same namespace/permission for a
+different reason: `Usuario`/`Perfil` (Etapa 6) had no UI at all, only `bin/rails console` or the
+one-time `usuarios:importar_legado` task, so there was no way to create a user or fix a lost
+temporary password without console access. It reuses `gerenciar_cadastros` rather than a new
+permission (no other tier exists to justify one) and never accepts a password param from the
+form — `create`/`resetar_senha` always generate a random one server-side and force
+`deve_trocar_senha`, shown exactly once via flash on redirect, same precedent as
+`Autenticacao::ImportadorUsuariosLegado`.
 
 ## Model layer
 

@@ -1,0 +1,35 @@
+<%= render "cadastros/flash" %>
+
+<h1>Usuários</h1>
+<%= link_to "Novo usuário", new_cadastros_usuario_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Login</th>
+      <th>Nome</th>
+      <th>Perfis</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @usuarios.each do |usuario| %>
+      <tr style="<%= "opacity:0.5" unless usuario.ativo %>">
+        <td><%= usuario.login %></td>
+        <td><%= usuario.nome %></td>
+        <td><%= usuario.perfis.map(&:nome).join(", ") %></td>
+        <td><%= usuario.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_usuario_path(usuario) %>
+          <%= button_to "Redefinir senha", resetar_senha_cadastros_usuario_path(usuario), method: :post,
+                form: { data: { turbo_confirm: "Redefinir a senha de #{usuario.login}?" } } %>
+          <% if usuario.ativo %>
+            <%= button_to "Inativar", cadastros_usuario_path(usuario), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este usuário?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

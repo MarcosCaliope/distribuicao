@@ -37,5 +37,8 @@ Rails.application.routes.draw do
     resources :apresentantes, except: :show
     resources :tipo_titulos, except: :show
     resources :faixa_custas, except: :show
+    resources :usuarios, except: :show do
+      member { post :resetar_senha }
+    end
   end
 end
