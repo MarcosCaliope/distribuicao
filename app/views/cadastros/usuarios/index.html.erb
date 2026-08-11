@@ -3,6 +3,8 @@
 <h1>Usuários</h1>
 <%= link_to "Novo usuário", new_cadastros_usuario_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_usuarios_path, placeholder: "Nome ou login" %>
+
 <table>
   <thead>
     <tr>

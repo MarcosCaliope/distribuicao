@@ -27,6 +27,16 @@ module Cadastros
       assert_response :success
     end
 
+    test "filtra a lista pelo parâmetro q" do
+      sign_in_as_administrador
+      FaixaCusta.create!(sequencial: 42, tipo: "Z", limite_inferior: 0, limite_superior: 100)
+
+      get cadastros_faixa_custas_path, params: { q: "A" }
+      assert_response :success
+      assert_match "<td>A</td>", response.body
+      assert_no_match "<td>42</td>", response.body
+    end
+
     test "cria faixa de custa" do
       sign_in_as_administrador
 

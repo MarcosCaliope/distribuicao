@@ -26,6 +26,16 @@ module Cadastros
       assert_response :success
     end
 
+    test "filtra a lista pelo parâmetro q" do
+      sign_in_as_administrador
+      Usuario.create!(login: "outro_login", nome: "Não deve aparecer", password: SENHA_PADRAO_TESTE)
+
+      get cadastros_usuarios_path, params: { q: "Usuário Teste" }
+      assert_response :success
+      assert_match "Usuário Teste", response.body
+      assert_no_match "Não deve aparecer", response.body
+    end
+
     test "cria usuário com senha temporária gerada e perfis atribuídos" do
       sign_in_as_administrador
       perfil_operador = Perfil.find_by!(nome: "operador")

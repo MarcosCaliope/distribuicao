@@ -1,5 +1,8 @@
 class Cartorio < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :nome, :codigo_legado
 
   has_many :titulos
 

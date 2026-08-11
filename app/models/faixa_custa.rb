@@ -1,5 +1,8 @@
 class FaixaCusta < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :sequencial, :tipo
 
   validates :sequencial, presence: true, uniqueness: true
   validates :tipo, presence: true

@@ -3,6 +3,8 @@
 <h1>Tipos de título</h1>
 <%= link_to "Novo tipo de título", new_cadastros_tipo_titulo_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_tipo_titulos_path, placeholder: "Descrição, código ou abreviatura" %>
+
 <table>
   <thead>
     <tr>

@@ -3,6 +3,8 @@
 <h1>Apresentantes</h1>
 <%= link_to "Novo apresentante", new_cadastros_apresentante_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_apresentantes_path, placeholder: "Nome ou código" %>
+
 <table>
   <thead>
     <tr>

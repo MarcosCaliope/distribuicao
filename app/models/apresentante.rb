@@ -1,5 +1,8 @@
 class Apresentante < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :nome, :codigo_legado
 
   CONVENIOS = %w[C I B].freeze # CDA, Isento, Banco
 

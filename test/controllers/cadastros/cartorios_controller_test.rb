@@ -27,6 +27,16 @@ module Cadastros
       assert_response :success
     end
 
+    test "filtra a lista pelo parâmetro q" do
+      sign_in_as_administrador
+      Cartorio.create!(nome: "Não deve aparecer", codigo_legado: "999")
+
+      get cadastros_cartorios_path, params: { q: "1º Ofício" }
+      assert_response :success
+      assert_match "1º Ofício", response.body
+      assert_no_match "Não deve aparecer", response.body
+    end
+
     test "cria cartório" do
       sign_in_as_administrador
 

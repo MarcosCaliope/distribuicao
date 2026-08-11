@@ -27,6 +27,16 @@ module Cadastros
       assert_response :success
     end
 
+    test "filtra a lista pelo parâmetro q" do
+      sign_in_as_administrador
+      TipoTitulo.create!(codigo_legado: "02", descricao: "Não deve aparecer", abreviatura: "NAO")
+
+      get cadastros_tipo_titulos_path, params: { q: "Duplicata" }
+      assert_response :success
+      assert_match "Duplicata Mercantil", response.body
+      assert_no_match "Não deve aparecer", response.body
+    end
+
     test "cria tipo de título" do
       sign_in_as_administrador
 

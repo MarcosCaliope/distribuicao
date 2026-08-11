@@ -13,7 +13,7 @@ module Cadastros
     before_action :set_usuario, only: [ :edit, :update, :destroy, :excluir, :resetar_senha ]
 
     def index
-      @usuarios = Usuario.order(:nome).includes(:perfis)
+      @usuarios = Usuario.pesquisar(params[:q]).order(:nome).includes(:perfis)
     end
 
     def new

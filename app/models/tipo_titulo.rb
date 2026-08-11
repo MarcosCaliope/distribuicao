@@ -1,5 +1,8 @@
 class TipoTitulo < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :descricao, :codigo_legado, :abreviatura
 
   has_many :titulos
 

@@ -28,4 +28,13 @@ class CartorioTest < ActiveSupport::TestCase
 
     assert_not duplicado.valid?
   end
+
+  test "pesquisar filtra por nome ou codigo_legado" do
+    moreira = Cartorio.create!(nome: "Moreira de Deus", codigo_legado: "10")
+    outro = Cartorio.create!(nome: "Outro", codigo_legado: "20")
+
+    assert_includes Cartorio.pesquisar("moreira"), moreira
+    assert_not_includes Cartorio.pesquisar("moreira"), outro
+    assert_includes Cartorio.pesquisar("10"), moreira
+  end
 end

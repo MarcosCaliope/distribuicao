@@ -3,6 +3,8 @@
 <h1>Faixas de custa</h1>
 <%= link_to "Nova faixa de custa", new_cadastros_faixa_custa_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_faixa_custas_path, placeholder: "Sequencial ou tipo" %>
+
 <table>
   <thead>
     <tr>

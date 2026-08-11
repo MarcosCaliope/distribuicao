@@ -3,7 +3,7 @@ module Cadastros
     before_action :set_faixa_custa, only: [ :edit, :update, :destroy ]
 
     def index
-      @faixa_custas = FaixaCusta.order(:sequencial)
+      @faixa_custas = FaixaCusta.pesquisar(params[:q]).order(:sequencial)
     end
 
     def new

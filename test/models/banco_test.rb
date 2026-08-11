@@ -28,4 +28,14 @@ class BancoTest < ActiveSupport::TestCase
 
     assert_not duplicado.valid?
   end
+
+  test "pesquisar filtra por nome, codigo_legado ou codigo_alfa" do
+    bb = Banco.create!(codigo_legado: "001", nome: "Banco do Brasil", codigo_alfa: "BB")
+    outro = Banco.create!(codigo_legado: "002", nome: "Outro", codigo_alfa: "OU")
+
+    assert_includes Banco.pesquisar("brasil"), bb
+    assert_not_includes Banco.pesquisar("brasil"), outro
+    assert_includes Banco.pesquisar("001"), bb
+    assert_includes Banco.pesquisar("BB"), bb
+  end
 end

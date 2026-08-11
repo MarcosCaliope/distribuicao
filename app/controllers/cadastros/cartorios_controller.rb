@@ -3,7 +3,7 @@ module Cadastros
     before_action :set_cartorio, only: [ :edit, :update, :destroy ]
 
     def index
-      @cartorios = Cartorio.order(:nome)
+      @cartorios = Cartorio.pesquisar(params[:q]).order(:nome)
     end
 
     def new

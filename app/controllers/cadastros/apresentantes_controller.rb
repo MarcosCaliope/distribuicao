@@ -3,7 +3,7 @@ module Cadastros
     before_action :set_apresentante, only: [ :edit, :update, :destroy ]
 
     def index
-      @apresentantes = Apresentante.order(:nome)
+      @apresentantes = Apresentante.pesquisar(params[:q]).order(:nome)
     end
 
     def new

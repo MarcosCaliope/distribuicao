@@ -3,6 +3,8 @@
 <h1>Bancos</h1>
 <%= link_to "Novo banco", new_cadastros_banco_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_bancos_path, placeholder: "Nome, código ou código alfa" %>
+
 <table>
   <thead>
     <tr>

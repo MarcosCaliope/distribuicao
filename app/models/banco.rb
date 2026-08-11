@@ -1,5 +1,8 @@
 class Banco < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :nome, :codigo_legado, :codigo_alfa
 
   belongs_to :apresentante, optional: true
 

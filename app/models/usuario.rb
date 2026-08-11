@@ -1,5 +1,8 @@
 class Usuario < ApplicationRecord
   include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :nome, :login
 
   has_secure_password
   has_many :sessoes, dependent: :destroy

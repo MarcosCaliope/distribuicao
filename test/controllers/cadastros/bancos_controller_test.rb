@@ -27,6 +27,16 @@ module Cadastros
       assert_response :success
     end
 
+    test "filtra a lista pelo parâmetro q" do
+      sign_in_as_administrador
+      Banco.create!(codigo_legado: "999", nome: "Não deve aparecer")
+
+      get cadastros_bancos_path, params: { q: "Banco do Brasil" }
+      assert_response :success
+      assert_match "Banco do Brasil", response.body
+      assert_no_match "Não deve aparecer", response.body
+    end
+
     test "cria banco associado a um apresentante" do
       sign_in_as_administrador
       apresentante = Apresentante.create!(nome: "Apresentante", codigo_legado: "001")

@@ -3,7 +3,7 @@ module Cadastros
     before_action :set_tipo_titulo, only: [ :edit, :update, :destroy ]
 
     def index
-      @tipo_titulos = TipoTitulo.order(:descricao)
+      @tipo_titulos = TipoTitulo.pesquisar(params[:q]).order(:descricao)
     end
 
     def new

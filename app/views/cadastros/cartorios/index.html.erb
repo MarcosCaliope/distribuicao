@@ -3,6 +3,8 @@
 <h1>Cartórios</h1>
 <%= link_to "Novo cartório", new_cadastros_cartorio_path %>
 
+<%= render "cadastros/pesquisa", url: cadastros_cartorios_path, placeholder: "Nome ou código" %>
+
 <table>
   <thead>
     <tr>

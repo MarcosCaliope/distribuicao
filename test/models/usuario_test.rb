@@ -25,4 +25,13 @@ class UsuarioTest < ActiveSupport::TestCase
     assert_includes Usuario.ativos, ativo
     assert_not_includes Usuario.ativos, inativo
   end
+
+  test "pesquisar filtra por nome ou login" do
+    maria = Usuario.create!(login: "maria_teste", nome: "Maria Souza", password: "senha12345")
+    outro = Usuario.create!(login: "joao_teste", nome: "João", password: "senha12345")
+
+    assert_includes Usuario.pesquisar("souza"), maria
+    assert_not_includes Usuario.pesquisar("souza"), outro
+    assert_includes Usuario.pesquisar("maria_teste"), maria
+  end
 end

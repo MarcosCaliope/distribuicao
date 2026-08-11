@@ -35,4 +35,14 @@ class TipoTituloTest < ActiveSupport::TestCase
 
     assert_not duplicado.valid?
   end
+
+  test "pesquisar filtra por descricao, codigo_legado ou abreviatura" do
+    duplicata = TipoTitulo.create!(codigo_legado: "01", descricao: "Duplicata Mercantil", abreviatura: "DM")
+    outro = TipoTitulo.create!(codigo_legado: "02", descricao: "Outro", abreviatura: "OU")
+
+    assert_includes TipoTitulo.pesquisar("mercantil"), duplicata
+    assert_not_includes TipoTitulo.pesquisar("mercantil"), outro
+    assert_includes TipoTitulo.pesquisar("01"), duplicata
+    assert_includes TipoTitulo.pesquisar("DM"), duplicata
+  end
 end

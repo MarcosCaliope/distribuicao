@@ -28,4 +28,13 @@ class FaixaCustaTest < ActiveSupport::TestCase
 
     assert outra.valid?
   end
+
+  test "pesquisar filtra por sequencial (integer) ou tipo" do
+    alvo = FaixaCusta.create!(sequencial: 1, tipo: "A", limite_inferior: 0, limite_superior: 100)
+    outra = FaixaCusta.create!(sequencial: 2, tipo: "B", limite_inferior: 100, limite_superior: 200)
+
+    assert_includes FaixaCusta.pesquisar("1"), alvo
+    assert_not_includes FaixaCusta.pesquisar("1"), outra
+    assert_includes FaixaCusta.pesquisar("A"), alvo
+  end
 end

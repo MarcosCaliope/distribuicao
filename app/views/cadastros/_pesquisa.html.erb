@@ -1,0 +1,7 @@
+<%= form_with url: url, method: :get do %>
+  <%= text_field_tag :q, params[:q], placeholder: placeholder %>
+  <%= submit_tag "Pesquisar" %>
+  <% if params[:q].present? %>
+    <%= link_to "Limpar", url %>
+  <% end %>
+<% end %>

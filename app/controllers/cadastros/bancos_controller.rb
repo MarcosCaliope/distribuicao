@@ -4,7 +4,7 @@ module Cadastros
     before_action :carregar_apresentantes, only: [ :new, :create, :edit, :update ]
 
     def index
-      @bancos = Banco.order(:nome)
+      @bancos = Banco.pesquisar(params[:q]).order(:nome)
     end
 
     def new
