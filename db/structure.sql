@@ -297,7 +297,8 @@ CREATE TABLE distribuidor.devedores (
     observacao character varying,
     quantidade_titulos_pendentes integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    ativo boolean DEFAULT true NOT NULL
 );
 
 
@@ -1936,6 +1937,7 @@ ALTER TABLE ONLY distribuidor.bancos
 SET search_path TO distribuidor;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260811190505'),
 ('20260729190337'),
 ('20260729190336'),
 ('20260729190334'),

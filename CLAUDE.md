@@ -314,6 +314,17 @@ otherwise bound the list, and this table is expected to grow large) — `pesquis
 columns, `protocolo_original` and `numero_protocolo_distribuido`) is how you find anything
 outside that recent window, not pagination.
 
+`Cadastros::DevedoresController` is a plain sixth dimension-table-style CRUD (unlike
+`TitulosController`, this one *is* the ordinary pattern) — `devedores.tipo_documento` +
+`cpf_cnpj` is a composite natural key (unique index already existed; mirrors the legacy
+`cad_devedor` table's composite PK), and both `titulos.devedor_id` and
+`devedor_solidarios.devedor_id` are `NOT NULL` FKs into it, so it needed the same
+`inativar!`/`Inativavel` treatment as the original 5 rather than a real `destroy` — `devedores`
+had no `ativo` column before this screen, added via a dedicated migration
+(`db/migrate/*_add_ativo_to_devedores.rb`) rather than reusing `Cadastros::TitulosController`'s
+hard-delete exception, which only applies because `titulos` has no comparable inbound `NOT NULL`
+FK problem once distribution/devedor-solidário are ruled out.
+
 ## Model layer
 
 Models under `app/models/` hold validations, associations, and scopes only (plus the odd

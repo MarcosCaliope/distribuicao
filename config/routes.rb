@@ -37,6 +37,7 @@ Rails.application.routes.draw do
     resources :apresentantes, except: :show
     resources :tipo_titulos, except: :show
     resources :faixa_custas, except: :show
+    resources :devedores, except: :show
     resources :titulos, except: :show
     resources :usuarios, except: :show do
       member do

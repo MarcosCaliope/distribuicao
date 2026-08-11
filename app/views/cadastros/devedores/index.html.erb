@@ -1,0 +1,37 @@
+<%= render "cadastros/flash" %>
+
+<h1>Devedores</h1>
+<%= link_to "Novo devedor", new_cadastros_devedor_path %>
+
+<%= render "cadastros/pesquisa", url: cadastros_devedores_path, placeholder: "Nome ou CPF/CNPJ" %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>CPF/CNPJ</th>
+      <th>Nome</th>
+      <th>Bairro</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @devedores.each do |devedor| %>
+      <tr style="<%= "opacity:0.5" unless devedor.ativo %>">
+        <td><%= devedor.tipo_documento %></td>
+        <td><%= devedor.cpf_cnpj %></td>
+        <td><%= devedor.nome %></td>
+        <td><%= devedor.bairro %></td>
+        <td><%= devedor.ativo ? "Ativo" : "Inativo" %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_devedor_path(devedor) %>
+          <% if devedor.ativo %>
+            <%= button_to "Inativar", cadastros_devedor_path(devedor), method: :delete,
+                  form: { data: { turbo_confirm: "Inativar este devedor?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

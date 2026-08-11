@@ -1,4 +1,9 @@
 class Devedor < ApplicationRecord
+  include Inativavel
+  include Pesquisavel
+
+  pesquisavel_por :nome, :cpf_cnpj
+
   has_many :titulos
   has_many :devedor_solidarios
 

@@ -1,0 +1,16 @@
+<%= render "cadastros/erros", model: devedor %>
+
+<%= form_with model: devedor, url: devedor.persisted? ? cadastros_devedor_path(devedor) : cadastros_devedores_path do |form| %>
+  <label>Tipo de documento<br>
+    <%= form.select :tipo_documento, options_for_select(%w[CPF CNPJ CI], devedor.tipo_documento), {}, required: true %>
+  </label><br>
+  <label>CPF/CNPJ<br><%= form.text_field :cpf_cnpj, required: true %></label><br>
+  <label>Nome<br><%= form.text_field :nome %></label><br>
+  <label>Endereço<br><%= form.text_field :endereco %></label><br>
+  <label>Bairro<br><%= form.text_field :bairro %></label><br>
+  <label>CEP<br><%= form.text_field :cep %></label><br>
+  <label>Observação<br><%= form.text_field :observacao %></label><br>
+  <label>Quantidade de títulos pendentes<br><%= form.number_field :quantidade_titulos_pendentes %></label><br>
+  <label><%= form.check_box :ativo %> Ativo</label><br>
+  <button type="submit">Salvar</button>
+<% end %>
