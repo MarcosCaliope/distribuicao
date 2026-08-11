@@ -45,6 +45,43 @@ module Cadastros
       assert_no_match "99999", response.body
     end
 
+    test "filtra a lista por protocolo" do
+      sign_in_as_administrador
+      @titulo.update!(numero_protocolo_distribuido: "PROT-777")
+      Titulo.create!(
+        devedor: Devedor.create!(tipo_documento: "CPF", cpf_cnpj: "22222222222", nome: "OUTRO"),
+        tipo_documento_devedor: "CPF", cpf_cnpj_devedor: "22222222222",
+        nome_devedor: "OUTRO", numero_titulo: "99999", data_recebimento: Date.current, valor: 50,
+        numero_protocolo_distribuido: "PROT-888"
+      )
+
+      get cadastros_titulos_path, params: { q: "PROT-777" }
+      assert_response :success
+      assert_match "12345", response.body
+      assert_no_match "99999", response.body
+    end
+
+    test "lista só os 10 títulos mais recentemente recebidos" do
+      sign_in_as_administrador
+      mais_antigo = @titulo
+      mais_antigo.update!(data_recebimento: 20.days.ago.to_date)
+
+      11.downto(1) do |dias_atras|
+        Titulo.create!(
+          devedor: Devedor.create!(tipo_documento: "CPF", cpf_cnpj: format("%011d", dias_atras), nome: "DEVEDOR #{dias_atras}"),
+          tipo_documento_devedor: "CPF", cpf_cnpj_devedor: format("%011d", dias_atras),
+          nome_devedor: "DEVEDOR #{dias_atras}", numero_titulo: "N#{dias_atras}",
+          data_recebimento: dias_atras.days.ago.to_date, valor: 10
+        )
+      end
+
+      get cadastros_titulos_path
+      assert_response :success
+      assert_equal 10, response.body.scan(">Editar<").count
+      assert_no_match mais_antigo.numero_titulo, response.body
+      assert_match "N1", response.body
+    end
+
     test "cria título e vincula (ou cria) o devedor pelo cpf_cnpj" do
       sign_in_as_administrador
 

@@ -12,7 +12,10 @@ module Cadastros
     before_action :carregar_listas, only: [ :new, :create, :edit, :update ]
 
     def index
-      @titulos = Titulo.pesquisar(params[:q]).includes(:cartorio, :devedor_solidarios).order(created_at: :desc)
+      @titulos = Titulo.pesquisar(params[:q])
+                        .includes(:cartorio, :devedor_solidarios)
+                        .order(data_recebimento: :desc, id: :desc)
+                        .limit(10)
     end
 
     def new

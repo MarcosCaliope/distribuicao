@@ -3,12 +3,15 @@
 <h1>Títulos</h1>
 <%= link_to "Novo título", new_cadastros_titulo_path %>
 
-<%= render "cadastros/pesquisa", url: cadastros_titulos_path, placeholder: "Número, devedor ou CPF/CNPJ" %>
+<p>Últimos 10 títulos recebidos. Pesquise para encontrar outros.</p>
+
+<%= render "cadastros/pesquisa", url: cadastros_titulos_path, placeholder: "Número, protocolo, devedor ou CPF/CNPJ" %>
 
 <table>
   <thead>
     <tr>
       <th>Número</th>
+      <th>Protocolo</th>
       <th>Devedor</th>
       <th>CPF/CNPJ</th>
       <th>Valor</th>
@@ -22,6 +25,7 @@
     <% @titulos.each do |titulo| %>
       <tr>
         <td><%= titulo.numero_titulo %></td>
+        <td><%= titulo.numero_protocolo_distribuido || titulo.protocolo_original %></td>
         <td><%= titulo.nome_devedor %></td>
         <td><%= titulo.cpf_cnpj_devedor %></td>
         <td><%= number_to_currency(titulo.valor) %></td>

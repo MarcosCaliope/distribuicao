@@ -307,7 +307,12 @@ set explicitly, which is what makes a manually-created título show up under
 controllers, `destroy` here is a real hard delete (no `ativo` column on `titulos` to soft-delete
 through) — but only when the título has never been distributed and has no
 `DevedorSolidario`s, matching the precedent that `Distribuicao::Desfazedor` only ever undoes a
-distribution, never deletes the título itself.
+distribution, never deletes the título itself. `index` is capped to the 10 most recently
+`data_recebimento` títulos (`titulos` has no per-cartório/per-status default scope that would
+otherwise bound the list, and this table is expected to grow large) — `pesquisar` (via
+`Pesquisavel`, matching `numero_titulo`/`nome_devedor`/`cpf_cnpj_devedor` plus both protocol
+columns, `protocolo_original` and `numero_protocolo_distribuido`) is how you find anything
+outside that recent window, not pagination.
 
 ## Model layer
 
