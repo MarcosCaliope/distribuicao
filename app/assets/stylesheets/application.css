@@ -8,3 +8,46 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* Layout de formulário em campos rotulados (label acima da caixa), usado por
+   Cadastros::TitulosController — ver layoutela.png. Reaproveitável por outras telas de
+   Cadastros:: no futuro; hoje só a tela de títulos usa essas classes. */
+.form-campos {
+  max-width: 640px;
+}
+
+.linha-campos {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.linha-campos .campo {
+  flex: 1;
+}
+
+.campo {
+  margin-bottom: 1.25rem;
+}
+
+.campo label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+}
+
+.campo input[type="text"],
+.campo input[type="number"],
+.campo input[type="date"],
+.campo select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.campo-checkbox label {
+  display: inline;
+  font-weight: normal;
+}

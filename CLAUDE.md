@@ -147,11 +147,12 @@ the shared HTML view (`app/views/relatorios/tabela.html.erb`) and `Relatorios::T
 (Prawn) render, replacing what was a copy-pasted staging-table-and-print-button per legacy
 screen. `Relatorios::ApplicationController` is the one place the html/pdf dual response format
 (`renderizar`) and the authorization gate live, so the individual report controllers under
-`app/controllers/relatorios/` stay thin action methods. A few reports are intentionally narrower
-than their legacy counterpart where the missing scope depends on a feature this app doesn't have
-yet (e.g. `TitulosEventuais` filters on manually-registered títulos, which can't exist until a
-manual-entry feature is built) — see each service's own comment and
-`docs/ANALISE_MIGRACAO.md`'s Etapa 5 section before treating an empty result as a bug.
+`app/controllers/relatorios/` stay thin action methods. `TitulosEventuais` filters on `status:
+"G"` (manually-registered títulos, per `frmExportaTitulos.frm#GeraDetalheEventual`) — this was
+an always-empty filter until `Cadastros::TitulosController` (below) added manual título entry;
+`"G"` is `titulos.status`'s DB default, so a manually-created título satisfies the filter without
+the controller ever setting `status` explicitly. See each service's own comment and
+`docs/ANALISE_MIGRACAO.md`'s Etapa 5 section before treating an empty report result as a bug.
 
 ## Autenticação e autorização (Etapa 6)
 
@@ -260,6 +261,14 @@ Rails CRUD, but two things are load-bearing, not incidental:
   `Operacoes::` controllers used one shared `operar_distribuicao` permission). Don't fold this
   back into `operar_distribuicao`.
 
+Every `Cadastros::` index (including `UsuariosController`) also supports search via the
+`Pesquisavel` concern (`app/models/concerns/pesquisavel.rb`, same one-concern-per-table pattern
+as `Inativavel`): a model declares `pesquisavel_por(*campos)` and gets a `.pesquisar(termo)`
+scope doing a case-insensitive `ILIKE` across those columns (e.g. nome/código for
+`Cartorio`/`Apresentante`/`Banco`, descrição/código/abreviatura for `TipoTitulo`, nome/login for
+`Usuario`). Add the same declaration to any new `Cadastros::` model rather than writing a
+one-off search scope.
+
 Building the write path also surfaced uniqueness/presence validations
 (`codigo_legado`/`codigo_alfa` on `Cartorio`/`Apresentante`/`Banco`/`TipoTitulo`) that already
 existed as DB constraints but not on the models — they were invisible until there was a form
@@ -280,6 +289,25 @@ because `Usuario` has no `NOT NULL` FK dependents outside `sessoes`/`perfil_usua
 already `dependent: :destroy` — none of the reasoning that forces soft-delete on
 `Cartorio`/`Banco`/`Apresentante`/`TipoTitulo`/`FaixaCusta` applies. Don't add a hard-delete path
 to those 5 without re-checking their FKs first.
+
+`Cadastros::TitulosController` is the odd one out in this namespace: `Titulo` isn't
+dimension/reference data, it's the core transactional entity, normally only ever created by
+`RemessaImportacao::Importador`. This controller adds manual título entry — a real, deliberate
+new business capability (the legacy `frmCadTitulos.frm` had the same concept), not just a form
+over an existing table. It reuses `gerenciar_cadastros` like `UsuariosController` did, for the
+same reason (no tier besides `administrador` to justify a new permission). Creating/updating
+finds-or-creates the `Devedor` by the `(tipo_documento, cpf_cnpj)` natural key — the same one
+`RemessaImportacao::Importador#localizar_ou_criar_devedor` uses — rather than requiring a
+separate devedor picker UI; it does **not** run `Importador`'s `avaliar_criticas` critique
+engine, since that's calibrated to remessa-file quality issues (malformed bytes, unregistered
+species) that don't apply to a human typing in correct data — `irregularidade_id` is just an
+optional plain field on the form instead. `status` is left at its DB default (`"G"`) rather than
+set explicitly, which is what makes a manually-created título show up under
+`Relatorios::TitulosEventuais` (see Relatórios above). Unlike the other 6 `Cadastros::`
+controllers, `destroy` here is a real hard delete (no `ativo` column on `titulos` to soft-delete
+through) — but only when the título has never been distributed and has no
+`DevedorSolidario`s, matching the precedent that `Distribuicao::Desfazedor` only ever undoes a
+distribution, never deletes the título itself.
 
 ## Model layer
 

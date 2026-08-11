@@ -1,4 +1,8 @@
 class Titulo < ApplicationRecord
+  include Pesquisavel
+
+  pesquisavel_por :numero_titulo, :nome_devedor, :cpf_cnpj_devedor
+
   belongs_to :devedor
   belongs_to :tipo_titulo, optional: true
   belongs_to :apresentante, optional: true

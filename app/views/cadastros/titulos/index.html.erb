@@ -1,0 +1,41 @@
+<%= render "cadastros/flash" %>
+
+<h1>Títulos</h1>
+<%= link_to "Novo título", new_cadastros_titulo_path %>
+
+<%= render "cadastros/pesquisa", url: cadastros_titulos_path, placeholder: "Número, devedor ou CPF/CNPJ" %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Número</th>
+      <th>Devedor</th>
+      <th>CPF/CNPJ</th>
+      <th>Valor</th>
+      <th>Recebimento</th>
+      <th>Status</th>
+      <th>Cartório</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @titulos.each do |titulo| %>
+      <tr>
+        <td><%= titulo.numero_titulo %></td>
+        <td><%= titulo.nome_devedor %></td>
+        <td><%= titulo.cpf_cnpj_devedor %></td>
+        <td><%= number_to_currency(titulo.valor) %></td>
+        <td><%= titulo.data_recebimento&.strftime("%d/%m/%Y") %></td>
+        <td><%= titulo.status.presence || "-" %></td>
+        <td><%= titulo.cartorio&.nome %></td>
+        <td>
+          <%= link_to "Editar", edit_cadastros_titulo_path(titulo) %>
+          <% if titulo.data_distribuicao.blank? && !titulo.devedor_solidarios.exists? %>
+            <%= button_to "Excluir", cadastros_titulo_path(titulo), method: :delete,
+                  form: { data: { turbo_confirm: "Excluir este título?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

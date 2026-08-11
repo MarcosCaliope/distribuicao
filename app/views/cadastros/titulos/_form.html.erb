@@ -1,0 +1,157 @@
+<%= render "cadastros/erros", model: titulo %>
+
+<%= form_with model: titulo, url: titulo.persisted? ? cadastros_titulo_path(titulo) : cadastros_titulos_path, class: "form-campos" do |form| %>
+  <h2>Devedor</h2>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :tipo_documento_devedor, "Tipo de documento" %>
+      <%= form.select :tipo_documento_devedor, options_for_select(%w[CPF CNPJ CI], titulo.tipo_documento_devedor), { include_blank: true }, required: true %>
+    </div>
+    <div class="campo">
+      <%= form.label :cpf_cnpj_devedor, "CPF/CNPJ do devedor" %>
+      <%= form.text_field :cpf_cnpj_devedor, required: true %>
+    </div>
+  </div>
+
+  <div class="campo">
+    <%= form.label :nome_devedor, "Nome do devedor" %>
+    <%= form.text_field :nome_devedor %>
+  </div>
+
+  <div class="campo">
+    <%= form.label :endereco_devedor, "Endereço do devedor" %>
+    <%= form.text_field :endereco_devedor %>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :cidade_devedor, "Cidade" %>
+      <%= form.text_field :cidade_devedor %>
+    </div>
+    <div class="campo">
+      <%= form.label :uf_devedor, "UF" %>
+      <%= form.text_field :uf_devedor, maxlength: 2 %>
+    </div>
+  </div>
+
+  <div class="campo">
+    <%= form.label :cep_devedor, "CEP" %>
+    <%= form.text_field :cep_devedor %>
+  </div>
+
+  <h2>Título</h2>
+
+  <div class="campo">
+    <%= form.label :numero_titulo, "Número do título" %>
+    <%= form.text_field :numero_titulo, required: true %>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :tipo_titulo_id, "Tipo de título" %>
+      <%= form.collection_select :tipo_titulo_id, @tipo_titulos, :id, :descricao, include_blank: true %>
+    </div>
+    <div class="campo">
+      <%= form.label :valor, "Valor" %>
+      <%= form.number_field :valor, step: "0.01", required: true %>
+    </div>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :data_emissao, "Data de emissão" %>
+      <%= form.date_field :data_emissao %>
+    </div>
+    <div class="campo">
+      <%= form.label :data_vencimento, "Data de vencimento" %>
+      <%= form.date_field :data_vencimento %>
+    </div>
+  </div>
+
+  <div class="campo">
+    <%= form.label :data_recebimento, "Data de recebimento" %>
+    <%= form.date_field :data_recebimento, value: titulo.data_recebimento || Date.current %>
+  </div>
+
+  <div class="campo">
+    <%= form.label :cedente, "Cedente" %>
+    <%= form.text_field :cedente %>
+  </div>
+
+  <h2>Sacador (opcional)</h2>
+
+  <div class="campo">
+    <%= form.label :nome_sacador, "Nome do sacador" %>
+    <%= form.text_field :nome_sacador %>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :documento_sacador, "Documento do sacador" %>
+      <%= form.text_field :documento_sacador %>
+    </div>
+    <div class="campo">
+      <%= form.label :endereco_sacador, "Endereço do sacador" %>
+      <%= form.text_field :endereco_sacador %>
+    </div>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :cidade_sacador, "Cidade do sacador" %>
+      <%= form.text_field :cidade_sacador %>
+    </div>
+    <div class="campo">
+      <%= form.label :uf_sacador, "UF do sacador" %>
+      <%= form.text_field :uf_sacador, maxlength: 2 %>
+    </div>
+  </div>
+
+  <div class="campo">
+    <%= form.label :cep_sacador, "CEP do sacador" %>
+    <%= form.text_field :cep_sacador %>
+  </div>
+
+  <h2>Distribuição e outros (opcional)</h2>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :apresentante_id, "Apresentante" %>
+      <%= form.collection_select :apresentante_id, @apresentantes, :id, :nome, include_blank: true %>
+    </div>
+    <div class="campo">
+      <%= form.label :cartorio_id, "Cartório" %>
+      <%= form.collection_select :cartorio_id, @cartorios, :id, :nome, include_blank: true %>
+    </div>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :oficio_distribuidor_id, "Ofício distribuidor" %>
+      <%= form.collection_select :oficio_distribuidor_id, @oficios_distribuidores, :id, :nome, include_blank: true %>
+    </div>
+    <div class="campo">
+      <%= form.label :irregularidade_id, "Irregularidade" %>
+      <%= form.collection_select :irregularidade_id, @irregularidades, :id, :descricao, include_blank: true %>
+    </div>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <%= form.label :codigo_banco, "Código do banco" %>
+      <%= form.text_field :codigo_banco %>
+    </div>
+    <div class="campo">
+      <%= form.label :codigo_agencia, "Código da agência" %>
+      <%= form.text_field :codigo_agencia %>
+    </div>
+  </div>
+
+  <div class="campo campo-checkbox">
+    <%= form.check_box :efeito_falencia %>
+    <%= form.label :efeito_falencia, "Efeito de falência" %>
+  </div>
+
+  <button type="submit">Salvar</button>
+<% end %>
